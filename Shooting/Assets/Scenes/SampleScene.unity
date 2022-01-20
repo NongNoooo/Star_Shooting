@@ -896,10 +896,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a383ce5e5ccaa934982bde12792dca33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  goDown: 0
-  goUp: 0
-  goLeft: 0
-  goRight: 0
+  gohorizontal: 0
+  goVertical: 0
+  xSpeed: 0
+  ySpeed: 0
 --- !u!1001 &1876125854
 PrefabInstance:
   m_ObjectHideFlags: 0
