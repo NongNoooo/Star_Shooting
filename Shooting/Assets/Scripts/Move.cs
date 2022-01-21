@@ -18,20 +18,31 @@ public class Move : MonoBehaviour
         noDir,
     }
 
+    public enum ZRotation
+    {
+        toRightRotation,
+        toLeftRotation,
+        noDir,
+    }
+
     public GoHorizontal goHorizontal;
     public GoVertical goVertical;
+    public ZRotation zRotation;
+
 
     float mh;
     float mv;
 
     public float xSpeed;
     public float ySpeed;
+    public float zSpeed;
 
     float mOriPosX;
     float mOriPosY;
 
     //방향 전환 속도 맥스값
-    float maxTurningSpeed = 10.0f;
+    float maxTurningSpeedLow = 5.0f;
+    float maxTurningSpeedHigh = 10.0f;
 
     //방향전환을 입력받기 시작할 마우스 위치값
     float goDirValue = 100.0f;
@@ -39,9 +50,13 @@ public class Move : MonoBehaviour
     void Start()
     {
         //게임 시작시 마우스 커서 안보이도록
-        Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.lockState = CursorLockMode.Locked;
+
+
         goHorizontal = GoHorizontal.noDir;
         goVertical = GoVertical.noDir;
+        zRotation = ZRotation.noDir;
+
 
         MousePositionInit();
     }
@@ -59,11 +74,12 @@ public class Move : MonoBehaviour
         Turing();
     }
 
-    Vector3 toRotation;
+    Vector2 toRotation;
 
+    //마우스 위치에 따라 상승한 가속도에 따라 회전
     void Turing()
     {
-        Vector3 dir = new Vector3(-ySpeed, xSpeed, 0.0f);
+        Vector2 dir = new Vector2(ySpeed, xSpeed);
 
         //90도에서 더 이상 회전안함
         //오일러 앵글은 음수값으로 더해지지 못함
@@ -71,12 +87,15 @@ public class Move : MonoBehaviour
         //transform.eulerAngles += dir * 10/*임의의값*/ * Time.deltaTime;
 
         //백터3 변수에 대입한 후에
-        toRotation += 10 * dir * Time.deltaTime;
+        //toRotation += 10 * dir * Time.deltaTime;
+        toRotation.x += 10 * ySpeed * Time.deltaTime;
+        toRotation.y += 10 * xSpeed * Time.deltaTime;
 
         TurningLock();
 
         //각도를 x로 지정하면 정상적으로 회전함
-        transform.eulerAngles = toRotation;
+        transform.eulerAngles = new Vector3(toRotation.x, toRotation.y, transform.eulerAngles.z);
+        
 
 
 
@@ -89,12 +108,13 @@ public class Move : MonoBehaviour
              transform.eulerAngles = new Vector3(-120.0f, transform.rotation.y, transform.rotation.z);
          }*/
     }
-
+    //x,y축 회전 각도 제한
     void TurningLock()
     {
         //회전 각도 제한
         toRotation.x = Mathf.Clamp(toRotation.x, -120.0f, 120.0f);
         toRotation.y = Mathf.Clamp(toRotation.y, -120.0f, 120.0f);
+        //toRotation.z = Mathf.Clamp(toRotation.z, -30.0f, 30.0f);
     }
 
     void Update()
@@ -109,8 +129,18 @@ public class Move : MonoBehaviour
         //결정된 회전방향에 따라 회전 작동
         HorizontalRotation();
         VeticalRotation();
+
+        TrueSpeedDir();
+
+        //기체 Z축 회전 스위치문
+        ZAxisRotation();
+        //방향키 a,d 입력에 따라
+        //스위치문 상태변경
+        GetKeyZAxis();
+
     }
 
+    //마우스 위치값 받아오는 메서드
     void MousePosition()
     {
         //마우스 위치값에 게임시작시에 받아온 마우스 위치값을 빼서
@@ -120,8 +150,10 @@ public class Move : MonoBehaviour
 
         mousPosLock();
 
-        Debug.Log("x = " + mh + "  y = " + mv);
+        Debug.Log(goHorizontal);
+        Debug.Log(goVertical);
     }
+    //마우스 입력값 제한 메서드
     void mousPosLock()
     {
         //마우스 입력값이 300, -300보다 못커지게 만듬
@@ -186,15 +218,11 @@ public class Move : MonoBehaviour
     {
         //회전 방향에 맞게 회전에 가속도 줌
         ySpeed += 5 * Time.deltaTime;
-
-        SpeedLimit(ref ySpeed);
     }
     void GoDown()
     {
         //회전 방향에 맞게 회전에 가속도 줌
         ySpeed -= 5 * Time.deltaTime;
-
-        SpeedLimit(ref ySpeed);
     }
     void StopVeticalRotation()
     {
@@ -232,44 +260,133 @@ public class Move : MonoBehaviour
         //회전 방향에 맞게 가속도 줌
         xSpeed += 5 * Time.deltaTime;
 
-
-        SpeedLimit(ref xSpeed);
     }
     void GoLeft()
     {
         //회전방향에 맞게 가속도 줌
         xSpeed -= 5 * Time.deltaTime;
-
-        SpeedLimit(ref xSpeed);
     }
     void StopHorizontalRotation()
     {
         //마우스가 화면 중앙으로 오게되면 회전가속을 0으로 만들어
         //더 이상 회전하지 않게 만듬
-        /*  if(ySpeed < 0)
-          {
-              //ySpeed += 10 * Time.deltaTime;
-              ySpeed = Mathf.Lerp(ySpeed, 0.0f, 1.0f);
-          }
-          else if(ySpeed > 0)
-          {
-              ySpeed = Mathf.Lerp(ySpeed, 0.0f, 1.0f);
-          }*/
         xSpeed = Mathf.Lerp(xSpeed, 0.0f, 1.0f);
+        //zSpeed = Mathf.Lerp(zSpeed, 0.0f, 1.0f);
     }
 
+    //z축 스위치문
+    void ZAxisRotation()
+    {
+        switch (zRotation)
+        {
+            case ZRotation.toRightRotation:
+                GoZAxisRotation();
+                return;
+            case ZRotation.toLeftRotation:
+                GoZAxisRotation();
+                return;
+            case ZRotation.noDir:
+                return;
+        }
+    }
+    //a,d키에 따라 위 메서드의 스위치 문의 상태를 변경시키는 코드
+    void GetKeyZAxis()
+    {
+        if (Input.GetKey(KeyCode.D))
+        {
+            zRotation = ZRotation.toRightRotation;
+        }
+        else if (Input.GetKeyUp(KeyCode.D))
+        {
+            zRotation = ZRotation.noDir;
+        }
+
+        if (Input.GetKey(KeyCode.A))
+        {
+            zRotation = ZRotation.toLeftRotation;
+        }
+        else if (Input.GetKeyUp(KeyCode.A))
+        {
+            zRotation = ZRotation.noDir;
+        }
+
+    }
+    //스위치 문의 상태에 따라 기체를 z축으로 회전
+    void GoZAxisRotation()
+    {
+        Vector3 tr = transform.eulerAngles;
+
+        if (zRotation == ZRotation.toRightRotation)
+        {
+            Quaternion rot = Quaternion.Euler(0f, 0f, -100 * Time.deltaTime);
+
+            transform.rotation *= rot;
+
+            /*Quaternion rot = Quaternion.Euler(0f, 0f, -100f);
+
+            Quaternion turn = Quaternion.Lerp(transform.rotation, rot, Time.deltaTime);
+
+            transform.rotation = turn;*/
+        }
+
+        if(zRotation == ZRotation.toLeftRotation)
+        {
+            Quaternion rot = Quaternion.Euler(0f, 0f, 100f * Time.deltaTime);
+
+            transform.rotation *= rot;
+        }
+    }
 
     //회전 가속도 최대속도 제한
-    void SpeedLimit(ref float speed)
+    void SpeedLowLimit(ref float speed)
     {
-        if(speed > maxTurningSpeed)
-        {
-            speed = maxTurningSpeed;
-        }
-        else if(speed < -maxTurningSpeed)
-        {
-            speed = -maxTurningSpeed;
-        }
+        speed = Mathf.Clamp(speed, -maxTurningSpeedLow, maxTurningSpeedLow);
+    }
+    void SpeedHighLimit(float speed)
+    {
+        speed = Mathf.Clamp(speed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
     }
 
+
+    void TrueSpeedDir()
+    {
+        float angle = transform.eulerAngles.z;
+
+        Debug.Log(angle);
+
+        if (goHorizontal == GoHorizontal.goLeft)
+        {
+            if (angle >= 0 && angle < 30)
+            {
+                Debug.Log("Low");
+            }
+            else if (angle >= 30 && angle <= 90)
+            {
+                Debug.Log("High");
+            }
+            else if(angle > 90 && angle <= 120)
+            {
+                Debug.Log("Low");
+            }
+            else if(angle > 120 && angle < 180)
+            {
+                Debug.Log("Low");
+            }
+            else if(angle >= 210 && angle <= 270)
+            {
+                Debug.Log("High");
+            }
+        }
+        else if (goHorizontal == GoHorizontal.goRight)
+        {
+            if (-angle < -30)
+            {
+                Debug.Log("Low");
+            }
+            else if (-angle >= -30 && -angle >= -90)
+            {
+                Debug.Log("High");
+            }
+        }
+    }
 }
