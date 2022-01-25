@@ -95,46 +95,46 @@ public class Move : MonoBehaviour
     private void FixedUpdate()
     {
         //회전최대 각도
-        TurningLock();
+        //TurningLock();
 
 
         //회전하는 코드
         Turing();
     }
 
-    Vector2 toRotation;
+    Vector3 toRotation;
+    float z;
 
     //마우스 위치에 따라 상승한 가속도에 따라 회전
     void Turing()
     {
-        //기체가 뒤집어질경우 조작키 연속성을 위해 위아래 속도 입력값 +- 변경
-        if (rotationState == ZRotationState.Up || rotationState == ZRotationState.UpRight || rotationState == ZRotationState.UpLeft || rotationState == ZRotationState.Right)
+        /*toRotation.y += 5 * xSpeed * Time.deltaTime;
+        toRotation.x += 5 * ySpeed * Time.deltaTime;*/
+
+
+        //기체 회전 상태에 따른 조작키 연속성 테스트
+        //(360도 이상회전으로 인해 위아래가 뒤집어질 경우)
+        if (rotationState == ZRotationState.Up || rotationState == ZRotationState.UpLeft || rotationState == ZRotationState.UpRight)
         {
             toRotation.y += 5 * xSpeed * Time.deltaTime;
             toRotation.x += 5 * ySpeed * Time.deltaTime;
         }
-        if (rotationState == ZRotationState.Down || rotationState == ZRotationState.DownRight || rotationState == ZRotationState.DownLeft || rotationState == ZRotationState.Left)
+        else if (rotationState == ZRotationState.Down || rotationState == ZRotationState.DownLeft || rotationState == ZRotationState.DownRight)
         {
             toRotation.y -= 5 * xSpeed * Time.deltaTime;
-            toRotation.x -= 5 * ySpeed * Time.deltaTime;
+            toRotation.x += 5 * ySpeed * Time.deltaTime;
         }
 
 
-        transform.eulerAngles = new Vector3(-toRotation.x, toRotation.y, transform.eulerAngles.z);
 
-
-        //각도를 x로 지정하면 정상적으로 회전함
-
-
-
+        //360도를 넘어가면 난리침
+        //transform.eulerAngles = new Vector3(-toRotation.x, toRotation.y, transform.eulerAngles.z);
 
         //정상적으로 회전함
-        /* transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(dir), 1.0f);
+        //왜???
+        transform.rotation = Quaternion.Euler(-toRotation.x, toRotation.y, z);
 
-         if (transform.rotation.eulerAngles.x < -120.0f)
-         {
-             transform.eulerAngles = new Vector3(-120.0f, transform.rotation.y, transform.rotation.z);
-         }*/
+        //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(toRotation.x, toRotation.y, z), 0.5f);
     }
     //x,y축 회전 각도 제한
     void TurningLock()
@@ -202,11 +202,11 @@ public class Move : MonoBehaviour
     //가속이 있는 방향(앞 또는 뒤)에 따라 move상태 스위치
     void KeyInput()
     {
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKey(KeyCode.W))
         {
             moveSpeed += Time.deltaTime;
         }
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKey(KeyCode.S))
         {
             moveSpeed -= Time.deltaTime;
         }
@@ -223,7 +223,7 @@ public class Move : MonoBehaviour
     //이동 코드
     void Go()
     {
-        transform.position += transform.forward * moveSpeed * Time.deltaTime;
+        transform.position += transform.forward * moveSpeed * 10 * Time.deltaTime;
     }
 
     //마우스 위치값 받아오는 메서드
@@ -236,9 +236,9 @@ public class Move : MonoBehaviour
 
         mousPosLock();
 
-        Debug.Log(goHorizontal);
+/*        Debug.Log(goHorizontal);
         Debug.Log(goVertical);
-    }
+*/    }
     //마우스 입력값 제한 메서드
     void mousPosLock()
     {
@@ -361,7 +361,7 @@ public class Move : MonoBehaviour
         //zSpeed = Mathf.Lerp(zSpeed, 0.0f, 1.0f);
     }
 
-    //z축 스위치문
+    //a,d 키입력에 따른 스위치문
     void ZAxisRotation()
     {
         switch (zRotation)
@@ -405,36 +405,17 @@ public class Move : MonoBehaviour
 
         if (zRotation == ZRotation.toRightRotation)
         {
-            Quaternion rot = Quaternion.Euler(0f, 0f, -100 * Time.deltaTime);
-
-            transform.rotation *= rot;
-
-            /*Quaternion rot = Quaternion.Euler(0f, 0f, -100f);
-
-            Quaternion turn = Quaternion.Lerp(transform.rotation, rot, Time.deltaTime);
-
-            transform.rotation = turn;*/
+            z -= 100 * Time.deltaTime;
         }
 
         if(zRotation == ZRotation.toLeftRotation)
         {
-            Quaternion rot = Quaternion.Euler(0f, 0f, 100f * Time.deltaTime);
-
-            transform.rotation *= rot;
+            z += 100 * Time.deltaTime;
         }
     }
 
-    //회전 가속도 최대속도 제한
-    void SpeedLowLimit(ref float speed)
-    {
-        speed = Mathf.Clamp(speed, -maxTurningSpeedLow, maxTurningSpeedLow);
-    }
-    void SpeedHighLimit(float speed)
-    {
-        speed = Mathf.Clamp(speed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
-    }
 
-
+    //기체의 z축 각도 스위치문
     void ZRot()
     {
         switch (rotationState)
@@ -457,12 +438,10 @@ public class Move : MonoBehaviour
                 break;
         }
     }
-
+    //기체의 z축 각도에 따른 스위치문 상태 변경
     void degree()
     {
         float angle = transform.eulerAngles.z;
-
-        Debug.Log(angle);
 
         if(angle >= 0 && angle <= 15.0f)
         {
@@ -510,33 +489,58 @@ public class Move : MonoBehaviour
             rotationState = ZRotationState.UpRight;
         }
     }
-
-
     //전지 또는 후진일때
     //degree의 상태가 up또는 down
 
+
+    //goVertical, goHorizontal의 상태와 ZRot의 기체각도에 따라 회전과 이동속도 제한 메서드
+    //이동하는 방향과 기체의 회전 방향이 맞지않을 경우 최대속도를 작게 만듬
     void SpeedClamp()
     {
-        if(goHorizontal == GoHorizontal.goRight && goVertical == GoVertical.noDir)
+        //위로 회전
+        if (goHorizontal == GoHorizontal.noDir)
         {
-            if (rotationState != ZRotationState.Right)
+            //가로 방향 회전이 없을경우
+            if (goVertical == GoVertical.goUp)
             {
-                xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                //기체 z축 회전이 없을 경우
+                if (rotationState == ZRotationState.Up)
+                {
+                    ySpeed = Mathf.Clamp(ySpeed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
+                    xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                }
+                else if(rotationState == ZRotationState.Down)
+                {
+                    ySpeed = Mathf.Clamp(ySpeed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
+                    xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                }
+                else
+                {
+                    ySpeed = Mathf.Clamp(ySpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                    xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                }
             }
-            else if (rotationState == ZRotationState.Right)
-            {
-                xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
-            }
+            
         }
-        else if (goHorizontal == GoHorizontal.goRight && goVertical == GoVertical.goUp)
+        else if(goHorizontal == GoHorizontal.goRight)
         {
-            if(rotationState != ZRotationState.UpRight)
+            if(goVertical == GoVertical.noDir)
             {
-                xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
-            }
-            else if(rotationState == ZRotationState.UpRight)
-            {
-                xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
+                if(rotationState == ZRotationState.UpRight)
+                {
+                    ySpeed = Mathf.Clamp(ySpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                    xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
+                }
+                else if(rotationState == ZRotationState.Right)
+                {
+                    ySpeed = Mathf.Clamp(ySpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                    xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedHigh, maxTurningSpeedHigh);
+                }
+                else
+                {
+                    ySpeed = Mathf.Clamp(ySpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                    xSpeed = Mathf.Clamp(xSpeed, -maxTurningSpeedLow, maxTurningSpeedLow);
+                }
             }
         }
     }
