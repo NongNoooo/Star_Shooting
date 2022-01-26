@@ -9,7 +9,7 @@ public class CamMove : MonoBehaviour
     void Awake()
     {
         GameObject p = GameObject.FindGameObjectWithTag("Player");
-        CamPos = p.transform.GetChild(1).gameObject;
+        CamPos = p.transform.GetChild(0).gameObject;
     }
 
     void Update()
@@ -25,6 +25,6 @@ public class CamMove : MonoBehaviour
     
     void CRotation()
     {
-        transform.rotation = Quaternion.Slerp(transform.rotation, CamPos.transform.rotation, 1.0f * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, CamPos.transform.rotation, 2.0f * Time.deltaTime);
     }
 }

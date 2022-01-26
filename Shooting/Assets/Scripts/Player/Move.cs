@@ -114,16 +114,24 @@ public class Move : MonoBehaviour
 
         //기체 회전 상태에 따른 조작키 연속성 테스트
         //(360도 이상회전으로 인해 위아래가 뒤집어질 경우)
-        if (rotationState == ZRotationState.Up || rotationState == ZRotationState.UpLeft || rotationState == ZRotationState.UpRight)
-        {
-            toRotation.y += 5 * xSpeed * Time.deltaTime;
-            toRotation.x += 5 * ySpeed * Time.deltaTime;
-        }
-        else if (rotationState == ZRotationState.Down || rotationState == ZRotationState.DownLeft || rotationState == ZRotationState.DownRight)
-        {
-            toRotation.y -= 5 * xSpeed * Time.deltaTime;
-            toRotation.x += 5 * ySpeed * Time.deltaTime;
-        }
+        /* if (rotationState == ZRotationState.Up || rotationState == ZRotationState.UpLeft || rotationState == ZRotationState.UpRight)
+         {
+             toRotation.y += 5 * xSpeed * Time.deltaTime;
+             toRotation.x += 5 * ySpeed * Time.deltaTime;
+         }
+         else if (rotationState == ZRotationState.Down || rotationState == ZRotationState.DownLeft || rotationState == ZRotationState.DownRight)
+         {
+             toRotation.y -= 5 * xSpeed * Time.deltaTime;
+             toRotation.x += 5 * ySpeed * Time.deltaTime;
+         }
+         else if(rotationState == ZRotationState.Right)
+         {
+             toRotation.y += 5 * ySpeed * Time.deltaTime;
+             toRotation.x += 5 * xSpeed * Time.deltaTime;
+         }*/
+
+        toRotation.y += 5 * xSpeed * Time.deltaTime;
+        toRotation.x += 5 * ySpeed * Time.deltaTime;
 
 
 
