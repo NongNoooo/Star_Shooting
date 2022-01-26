@@ -4,38 +4,29 @@ using UnityEngine;
 
 public class MoveUseMouse : MonoBehaviour
 {
-    public GameObject lead;
-    public GameObject front;
 
-    float mh;
-    float mv;
+    Vector2 screenCenter,lookInput,mouseDistance;
 
-    float mOriPosX;
-    float mOriPosY;
+    Move move;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        mOriPosX = Input.mousePosition.x;
-        mOriPosY = Input.mousePosition.y;
+        screenCenter.x = Screen.width * 0.5f;
+        screenCenter.y = Screen.height * 0.5f;
+
+        move = transform.GetComponent<Move>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        MouseOriginPos();
-        LeadCursorMove();
+        lookInput.x = Input.mousePosition.x;
+        lookInput.y = Input.mousePosition.y;
+
+        mouseDistance.x = (lookInput.x - screenCenter.x) / screenCenter.x;
+        mouseDistance.y = (lookInput.y - screenCenter.y) / screenCenter.y;
+
+        transform.Rotate(-mouseDistance.y * 90.0f * Time.deltaTime, mouseDistance.x * 90.0f * Time.deltaTime, transform.rotation.z);
+        //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(new Vector3(-mouseDistance.y, mouseDistance.x, transform.eulerAngles.z)), 10.0f * Time.deltaTime);
     }
 
-    void MouseOriginPos()
-    {
-        mv = Input.mousePosition.x - mOriPosX;
-        mh = Input.mousePosition.y - mOriPosY;
-
-    }
-
-    void LeadCursorMove()
-    {
-        lead.transform.position = new Vector3(mv, mh, front.transform.position.z);
-    }
 }
