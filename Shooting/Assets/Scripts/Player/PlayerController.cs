@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviour
         mOriPosX = Input.mousePosition.x;
         mOriPosY = Input.mousePosition.y;
 
-        //???
+        //화면중앙
         screenCenter.x = Screen.width * 0.5f;
         screenCenter.y = Screen.height * 0.5f;
 
