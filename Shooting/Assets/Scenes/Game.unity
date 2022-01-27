@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.23678067, g: 0.20500085, b: 0.20824316, a: 1}
+  m_IndirectSpecularColor: {r: 0.23609066, g: 0.2049644, b: 0.20774865, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -983,8 +983,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 545673634}
-  - component: {fileID: 545673635}
   - component: {fileID: 545673636}
+  - component: {fileID: 545673635}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1149,8 +1149,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 587525523}
   m_LocalRotation: {x: -0.5, y: -0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: -54.91, z: 825}
-  m_LocalScale: {x: 2.7697, y: 2.7697, z: 2.7697}
+  m_LocalPosition: {x: 0, y: -54.91, z: 818}
+  m_LocalScale: {x: 3.1430554, y: 3.1430554, z: 3.1430554}
   m_Children: []
   m_Father: {fileID: 545673634}
   m_RootOrder: 3
@@ -2073,7 +2073,7 @@ GameObject:
   - component: {fileID: 1364787780}
   m_Layer: 0
   m_Name: World
-  m_TagString: Untagged
+  m_TagString: EnemyIndicater
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
