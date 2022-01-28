@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -72,6 +73,142 @@ public class PlayerController : MonoBehaviour
     //?????????? ???????? ?????? ?????? ??????
     float goDirValue = 10.0f;
 
+
+
+
+    //스텟 시스템
+    float statMax = 60.0f;
+    [Range(0,20)] //스텟 상승 최대 최소치
+    public float moveSpeedStat = 10.0f;
+    float moveSpeedStatMax = 20.0f;
+    [Range(0, 20)]
+    public float laserDamageStat = 10.0f;
+    float laserDamageStatMax = 20.0f;
+
+    float shieldStat = 10.0f;
+    float shieldStatMax = 20.0f;
+
+
+    //이동속도에 따른 방향 회전 속도 증가 감소
+    float turningSpeed;
+
+    public enum Stat
+    {
+        SpeedChageOn,
+        AttackChageOn,
+        shieldChangeOn,
+        NothingOn,
+    }
+
+    public Stat stat;
+
+    void StatDistribution()
+    {
+        switch (stat)
+        {
+            case Stat.SpeedChageOn:
+                SpeedtoOther();
+                break;
+            case Stat.AttackChageOn:
+                break;
+            case Stat.shieldChangeOn:
+                break;
+            case Stat.NothingOn:
+                break;
+        }
+    }
+    //스텟 재분배를 위한 활성화 비활성화
+    void StatChangeActivate()
+    {
+        if(stat == Stat.NothingOn)
+        {
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                Debug.Log("Z");
+                stat = Stat.SpeedChageOn;
+            }
+
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                stat = Stat.AttackChageOn;
+            }
+
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                stat = Stat.shieldChangeOn;
+            }
+        }
+        else if (stat == Stat.SpeedChageOn)
+        {
+            Debug.Log("DeActive");
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                Debug.Log("z");
+                stat = Stat.NothingOn;
+            }
+        }
+        else if (stat == Stat.AttackChageOn)
+        {
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                stat = Stat.NothingOn;
+            }
+        }
+        else if (stat == Stat.shieldChangeOn)
+        {
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                stat = Stat.NothingOn;
+            }
+        }
+
+    }
+    //스피드 스텟 재분배
+    void SpeedtoOther()
+    {
+        //스피드 스탯이 변경 활성화 되있을때
+        if(stat == Stat.SpeedChageOn)
+        {
+            float curTime = 0;
+
+            //x키를 누르면 스피드스텟이 감소하고 공격력이 상승
+            if (Input.GetKey(KeyCode.X))
+            {
+                curTime += Time.deltaTime;
+                //스피드 스텟이 0보다 크고
+                if(moveSpeedStat >= 0)
+                {
+                    //레이저 데미지 스텟이 맥스치보다 낮을때만 발동함
+                    if(laserDamageStat <= laserDamageStatMax)
+                    {
+                        moveSpeedStat -= curTime + Time.deltaTime;
+                        laserDamageStat += curTime + Time.deltaTime;
+
+                    }
+                }
+            }
+            else if (Input.GetKeyUp(KeyCode.X))
+            {
+                curTime = 0;
+            }
+
+            if (Input.GetKey(KeyCode.C))
+            {
+                curTime += Time.deltaTime;
+
+                if (moveSpeedStat >= 0)
+                {
+                    //레이저 데미지 스텟이 맥스치보다 낮을때만 발동함
+                    if (shieldStat <= shieldStatMax)
+                    moveSpeedStat -= curTime + Time.deltaTime;
+                    shieldStat += curTime + Time.deltaTime;
+                }
+            }
+        }
+    }
+  
+
+
     void Start()
     {
         //???? ?????? ?????? ???? ??????????
@@ -82,7 +219,7 @@ public class PlayerController : MonoBehaviour
         goVertical = GoVertical.noDir;
         zRotation = ZRotation.noDir;
         rotationState = ZRotationState.Up;
-
+        stat = Stat.NothingOn;
 
         MousePositionInit();
     }
@@ -102,35 +239,36 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //???????? ????
-        //TurningLock();
-
-
-        //???????? ????
+        //기체 x,y축 회전
         Turing();
+
+
+        //리드커서가 마우스 위치에 위치하도록
+        mouseLeadCursurPos();
     }
 
     Vector3 toRotation;
     public float z;
-    Vector3 dir;
     public Transform player;
 
 
-    //?????? ?????? ???? ?????? ???????? ???? ????
+    //기체 x,y회전
     void Turing()
     {
-        //????????
         toRotation.y += 5 * xSpeed * Time.deltaTime;
         toRotation.x += 5 * ySpeed * Time.deltaTime;
 
 
 
-        //?? ??
+        //마우스 위치 x,y를 바라봐야할 위치로 지정
         lookInput.x = Input.mousePosition.x;
         lookInput.y = Input.mousePosition.y;
 
+        //마우스의 위치를 마우스위치 - 화면 중앙 / 화면 중앙으로 백분률?로 받음
+        //값은 화면중앙일땐 0 화면의 끝일땐 1로 나오긴함
         mouseDistance.x = (lookInput.x - screenCenter.x) / screenCenter.x;
         mouseDistance.y = (lookInput.y - screenCenter.y) / screenCenter.y;
+
 
         //transform.Rotate(-mouseDistance.y * 90.0f * Time.deltaTime, mouseDistance.x * 90.0f * Time.deltaTime, transform.rotation.z);
         if (xSpeed > 0 || xSpeed < 0 || ySpeed > 0 || ySpeed < 0)
@@ -138,24 +276,11 @@ public class PlayerController : MonoBehaviour
             transform.Rotate(-mouseDistance.y * 90.0f * Time.deltaTime, mouseDistance.x * 90.0f * Time.deltaTime, 0);
 
         }
-
-        //lead.transform.position = new Vector3(-mouseDistance.y + front.transform.position.x, mouseDistance.x + front.transform.position.y, front.transform.position.z);
-        //lead.transform.position = new Vector3(-mouseDistance.y+transform.position.x ,mouseDistance.x+transform.position.x, front.transform.position.z);
-        //lead.transform.position = new Vector3(mh + front.transform.position.x, mv + front.transform.position.y, front.transform.position.z);
+    }
+    //리드 마우스커서 위치를 현제 마우스위치로
+    void mouseLeadCursurPos()
+    {
         lead.transform.position = new Vector3(Input.mousePosition.x, Input.mousePosition.y);
-        //lead.transform.RotateAround(player.transform.position, Vector3.zero,1.0f*Time.deltaTime);
-        //transform.RotateAround(player.transform.position, Vector3.up, 1.0f * Time.deltaTime);
-
-        //360???? ???????? ??????
-        //transform.eulerAngles = new Vector3(-toRotation.x, toRotation.y, transform.eulerAngles.z);
-
-        //?????????? ??????
-        //?????
-        //transform.rotation = Quaternion.Euler(-toRotation.x, toRotation.y, z);
-
-
-        //dir = new Vector3(-toRotation.x, toRotation.y, transform.eulerAngles.z);
-        //dir = new Vector3(-mv, mh, transform.eulerAngles.z);
     }
 
     public GameObject zRotObj;
@@ -164,52 +289,126 @@ public class PlayerController : MonoBehaviour
     public GameObject front;
 
 
-    //x,y?? ???? ???? ????
-    void TurningLock()
-    {
-        //???? ???? ????
-        //toRotation.x = Mathf.Clamp(toRotation.x, -120.0f, 120.0f);
-        if (toRotation.x < -120.0f)
-        {
-            toRotation.x = -120.0f;
-        }
-
-        toRotation.y = Mathf.Clamp(toRotation.y, -120.0f, 120.0f);
-        //toRotation.z = Mathf.Clamp(toRotation.z, -30.0f, 30.0f);
-    }
-
     void Update()
     {
         //?????? ???? ???????? ??????
         MousePosition();
 
+
+
         //?????? ?????? ???? ???????????? ???????? ???????? ??????
         MouseHorizontalPosCheck();
         MouseVerticalPosCheck();
+
+
 
         //?????? ?????????? ???? ???? ????
         HorizontalRotation();
         VeticalRotation();
 
-        //???? z?? ???? ?????? ???? ???? ????
+        
+
         ZRot();
         //z?? ?????? ???? ZRot???????? ???? ????
         degree();
 
-        //???? Z?? ???? ????????
+
+
+        //스위치문 상태에 따라 해당 방향으로 z축 회전
         ZAxisRotation();
-        //?????? a,d ?????? ????
-        //???????? ????????
+        //a,d키 입력에 따라 ZAxisRotation스위치문 상태 변경
         GetKeyZAxis();
 
-        //??,?? ???? ????????
+
+
+        //스위치문의 상태에 따라 앞뒤로 이동
         GoMove();
-        //???????? ?????? ???? GoMove???????? ???? ????
+        //w,s키입력에 따라 앞뒤 가속도를 받고 가속도에 따라 GoMove스위치문 상태 변경
         KeyInput();
 
+
+
+        //??????????
         SpeedClamp();
+
+
+
+        //레이저 발사
+        Attack();
+
+
+        //스텟 재분배? 변경?스위치문
+        StatDistribution();
+        //스텟 변경 활성화 비활성화 
+        StatChangeActivate();
+        //스텟 변경시 값이 0보다 작아지거나 맥스값보다 커지면 0,맥스값 으로 고정
+        StatLimit();
     }
 
+
+ 
+    public GameObject laser;
+    public GameObject laserBlaster;
+    public GameObject target = null;
+
+    //마우스 왼쪽 버튼입력으로 공격
+    //autoTarget스크립트에서 Target정보 넘겨받고 laserBlast로 넘겨줌
+    void Attack()
+    {
+        if (Input.GetMouseButtonUp(0))
+        {
+            GameObject l = Instantiate(laser);
+
+            //autoTarget으로 부터 target정보를 넘겨 받아 target이 null이 아닐경우
+            if(target != null)
+            {
+                LaserBlast lb = l.GetComponent<LaserBlast>();
+
+                //AutoTarget스크립트에서 전달받은 target정보를 LaserBlast로 전달
+                lb.target = target;
+            }
+
+            l.transform.position = laserBlaster.transform.position;
+            l.transform.rotation = laserBlaster.transform.rotation;
+
+        }
+    }
+
+    //스텟 변경시 값이 0보다 작아지거나 맥스값보다 커지면 0,맥스값 으로 고정
+    void StatLimit()
+    {
+        if (moveSpeedStat < 0)
+        {
+            moveSpeedStat = 0;
+        }
+
+        if (laserDamageStat < 0)
+        {
+            laserDamageStat = 0;
+        }
+
+        if (shieldStat < 0)
+        {
+            shieldStat = 0;
+        }
+
+        if (moveSpeedStat > moveSpeedStatMax)
+        {
+            moveSpeedStat = moveSpeedStatMax;
+        }
+
+        if (laserDamageStat > laserDamageStatMax)
+        {
+            laserDamageStat = laserDamageStatMax;
+        }
+
+        if (shieldStat > shieldStatMax)
+        {
+            shieldStat = shieldStatMax;
+        }
+    }
+
+    //스위치문 상태에 따라 기체의 앞뒤로 가속
     void GoMove()
     {
         switch (move)
@@ -225,18 +424,36 @@ public class PlayerController : MonoBehaviour
                      break;*/
         }
     }
-
-    //w???? s?? ?????? ?????????? ???? ???????? ????
-    //?????? ???? ????(?? ???? ??)?? ???? move???? ??????
+    //w키로 앞으로 가속
+    //s키로 뒤로 가속
+    //우주 공간이라 저항이 없어 감속이 일어나지 않는다고 생각해서
+    //키입력을 멈췄을때 해당 위치에서 멈추는게 아니라 가속도를 얻는것을 멈춤
+    //가속도가 0 이상일땐 앞으로
+    //0이하일땐 뒤로 이동
     void KeyInput()
     {
         if (Input.GetKey(KeyCode.W))
         {
-            moveSpeed += Time.deltaTime;
+            if(moveSpeed <= moveSpeedStat)
+            {
+                moveSpeed += Time.deltaTime;
+            }
+            else if(moveSpeed >= moveSpeedStat)
+            {
+                moveSpeed = moveSpeedStat;
+            }
         }
+
         if (Input.GetKey(KeyCode.S))
         {
-            moveSpeed -= Time.deltaTime;
+            if(moveSpeed >= -moveSpeedStat)
+            {
+                moveSpeed -= Time.deltaTime;
+            }
+            else if(moveSpeed <= -moveSpeedStat)
+            {
+                moveSpeed = -moveSpeedStat;
+            }
         }
 
         if (moveSpeed > 0)
@@ -248,11 +465,14 @@ public class PlayerController : MonoBehaviour
             move = Moving.goBack;
         }
     }
-    //???? ????
+    //위에서 받은 가속도에 따라 이동
+    //s키를 누적시키면 movespeed값이 -가 됨으로 뒤로감
     void Go()
     {
-        transform.position += transform.forward * moveSpeed * 10 * Time.deltaTime;
+        transform.position += transform.forward * moveSpeed * 100 * Time.deltaTime;
     }
+
+
 
     //?????? ?????? ???????? ??????
     void MousePosition()
@@ -390,7 +610,7 @@ public class PlayerController : MonoBehaviour
         //zSpeed = Mathf.Lerp(zSpeed, 0.0f, 1.0f);
     }
 
-    //a,d ???????? ???? ????????
+    //a,d키를 이용해 z축 회전을 위한 스위치문
     void ZAxisRotation()
     {
         switch (zRotation)
@@ -405,7 +625,9 @@ public class PlayerController : MonoBehaviour
                 return;
         }
     }
-    //a,d???? ???? ?? ???????? ?????? ???? ?????? ?????????? ????
+    //a,d키의 입력에 따라 스위치문 상태 변경
+    //z축 회전도 앞뒤 이동 공식처럼 가속도를 얻게되면 멈추지않고 계속 회전시키려고했는데
+    //멀미때문에 키입력을 회전하지않도록 제작
     void GetKeyZAxis()
     {
         if (Input.GetKey(KeyCode.D))
@@ -427,35 +649,24 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-    //?????? ???? ?????? ???? ?????? z?????? ????
+    //스위치문의 상태에 따라 z축 회전
     void GoZAxisRotation()
     {
-        Vector3 tr = transform.eulerAngles;
-
         if (zRotation == ZRotation.toRightRotation)
         {
             //z -= 100 * Time.deltaTime;
             transform.Rotate(0, 0, -100 * Time.deltaTime);
         }
-        else if (zRotation == ZRotation.noDir)
-        {
-            z = 0;
-        }
 
         if (zRotation == ZRotation.toLeftRotation)
         {
             transform.Rotate(0, 0, 100 * Time.deltaTime);
-
-            //z += 100 * Time.deltaTime;
-        }
-        else if (zRotation == ZRotation.noDir)
-        {
-            z = 0;
         }
     }
 
 
-    //?????? z?? ???? ????????
+    //???????????
+    //현제 기체의 회전 상태
     void ZRot()
     {
         switch (rotationState)
@@ -478,7 +689,7 @@ public class PlayerController : MonoBehaviour
                 break;
         }
     }
-    //?????? z?? ?????? ???? ???????? ???? ????
+    //현제 기체의 z각도에 따라 스위치문 상태 변경
     void degree()
     {
         float angle = transform.eulerAngles.z;
@@ -529,12 +740,9 @@ public class PlayerController : MonoBehaviour
             rotationState = ZRotationState.UpRight;
         }
     }
-    //???? ???? ????????
-    //degree?? ?????? up???? down
 
-
-    //goVertical, goHorizontal?? ?????? ZRot?? ?????????? ???? ?????? ???????? ???? ??????
-    //???????? ?????? ?????? ???? ?????? ???????? ???? ?????????? ???? ????
+    //???????????
+    //zRot상태에 따른 최대 최소속도 조절
     void SpeedClamp()
     {
         //???? ????

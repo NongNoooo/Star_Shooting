@@ -10,7 +10,7 @@ public class TargetIndicator : MonoBehaviour
     public float OutOfSightOffset = 20f;
     private float outOfSightOffest { get { return OutOfSightOffset /* canvasRect.localScale.x*/; } }
 
-    private GameObject target;
+    public GameObject target;
     private Camera mainCamera;
     private RectTransform canvasRect;
 
