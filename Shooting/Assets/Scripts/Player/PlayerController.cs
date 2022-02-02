@@ -73,7 +73,7 @@ public class PlayerController : MonoBehaviour
     //?????????? ???????? ?????? ?????? ??????
     float goDirValue = 10.0f;
 
-
+    public float curTime = 0;
 
 
     //스텟 시스템
@@ -84,8 +84,8 @@ public class PlayerController : MonoBehaviour
     [Range(0, 20)]
     public float laserDamageStat = 10.0f;
     float laserDamageStatMax = 20.0f;
-
-    float shieldStat = 10.0f;
+    [Range(0,20)]
+    public float shieldStat = 10.0f;
     float shieldStatMax = 20.0f;
 
 
@@ -108,12 +108,16 @@ public class PlayerController : MonoBehaviour
         {
             case Stat.SpeedChageOn:
                 SpeedtoOther();
+                moveSlider.color = Color.green;
                 break;
             case Stat.AttackChageOn:
+                AttackToOther();
                 break;
             case Stat.shieldChangeOn:
+                ShieldToOther();
                 break;
             case Stat.NothingOn:
+                moveSlider.color = Color.white;
                 break;
         }
     }
@@ -126,6 +130,7 @@ public class PlayerController : MonoBehaviour
             {
                 Debug.Log("Z");
                 stat = Stat.SpeedChageOn;
+
             }
 
             if (Input.GetKeyDown(KeyCode.X))
@@ -166,48 +171,107 @@ public class PlayerController : MonoBehaviour
     //스피드 스텟 재분배
     void SpeedtoOther()
     {
-        //스피드 스탯이 변경 활성화 되있을때
+        //스피드 스탯이 변경 활성화 되있을때     
         if(stat == Stat.SpeedChageOn)
         {
-            float curTime = 0;
-
             //x키를 누르면 스피드스텟이 감소하고 공격력이 상승
             if (Input.GetKey(KeyCode.X))
             {
-                curTime += Time.deltaTime;
                 //스피드 스텟이 0보다 크고
                 if(moveSpeedStat >= 0)
                 {
                     //레이저 데미지 스텟이 맥스치보다 낮을때만 발동함
                     if(laserDamageStat <= laserDamageStatMax)
                     {
-                        moveSpeedStat -= curTime + Time.deltaTime;
-                        laserDamageStat += curTime + Time.deltaTime;
-
+                        moveSpeedStat -= Time.deltaTime;
+                        laserDamageStat += Time.deltaTime;
                     }
                 }
-            }
-            else if (Input.GetKeyUp(KeyCode.X))
-            {
-                curTime = 0;
             }
 
             if (Input.GetKey(KeyCode.C))
             {
-                curTime += Time.deltaTime;
-
                 if (moveSpeedStat >= 0)
                 {
                     //레이저 데미지 스텟이 맥스치보다 낮을때만 발동함
                     if (shieldStat <= shieldStatMax)
-                    moveSpeedStat -= curTime + Time.deltaTime;
-                    shieldStat += curTime + Time.deltaTime;
+                    {
+                        moveSpeedStat -= Time.deltaTime;
+                        shieldStat += Time.deltaTime;
+                    }
+
                 }
             }
         }
     }
-  
 
+    void AttackToOther()
+    {
+        //attackChageOn상태가 아니면 작동안함
+        if(stat != Stat.AttackChageOn)
+        {
+            return;
+        }
+
+        //레이저 데미지 스텟이 0보다 작으면 작동 x
+        if (laserDamageStat <= 0)
+        {
+            return;
+        }
+
+        if (Input.GetKey(KeyCode.Z))
+        {
+            //스피드 스탯이 맥스치보다 커지면 작동x
+            if(moveSpeedStat <= moveSpeedStatMax)
+            {
+                laserDamageStat -= Time.deltaTime;
+                moveSpeedStat += Time.deltaTime;
+            }
+        }
+
+        if (Input.GetKey(KeyCode.C))
+        {
+            if (shieldStat <= shieldStatMax)
+            {
+                laserDamageStat -= Time.deltaTime;
+                shieldStat += Time.deltaTime;
+            }
+
+        }
+    }
+
+    void ShieldToOther()
+    {
+        if(stat != Stat.shieldChangeOn)
+        {
+            return;
+        }
+
+        if (shieldStat <= 0)
+        {
+            return;
+        }
+
+        if (Input.GetKey(KeyCode.Z))
+        {
+            if (moveSpeedStat <= moveSpeedStatMax)
+            {
+                shieldStat -= Time.deltaTime;
+                moveSpeedStat += Time.deltaTime;
+            }
+        }
+
+        if (Input.GetKey(KeyCode.X))
+        {
+            if (laserDamageStat <= laserDamageStatMax)
+            {
+                shieldStat -= Time.deltaTime;
+                laserDamageStat += Time.deltaTime;
+            }
+        }
+    }
+
+    Image moveSlider;
 
     void Start()
     {
@@ -220,6 +284,13 @@ public class PlayerController : MonoBehaviour
         zRotation = ZRotation.noDir;
         rotationState = ZRotationState.Up;
         stat = Stat.NothingOn;
+
+
+        //스텟 재투자 슬라이더 표시
+        moveSlider = moveSliderFillObj.GetComponent<Image>();
+
+
+
 
         MousePositionInit();
     }
@@ -343,8 +414,16 @@ public class PlayerController : MonoBehaviour
         StatChangeActivate();
         //스텟 변경시 값이 0보다 작아지거나 맥스값보다 커지면 0,맥스값 으로 고정
         StatLimit();
+        //스탯 슬라이더 UI표시
+        StatSlider();
     }
 
+    public GameObject moveSliderFillObj;
+
+    void StatSlider()
+    {
+        moveSlider.fillAmount = moveSpeedStat / moveSpeedStatMax;
+    }
 
  
     public GameObject laser;
