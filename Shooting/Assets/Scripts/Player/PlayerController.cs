@@ -88,6 +88,10 @@ public class PlayerController : MonoBehaviour
     public float shieldStat = 10.0f;
     float shieldStatMax = 20.0f;
 
+    //스탯 UI
+    public Image speedSliderFill;
+    public Image laserDamageSliderFill;
+    public Image ShieldSliderFill;
 
     //이동속도에 따른 방향 회전 속도 증가 감소
     float turningSpeed;
@@ -102,24 +106,50 @@ public class PlayerController : MonoBehaviour
 
     public Stat stat;
 
+    void Start()
+    {
+        //???? ?????? ?????? ???? ??????????
+        //Cursor.lockState = CursorLockMode.Locked;
+
+
+        goHorizontal = GoHorizontal.noDir;
+        goVertical = GoVertical.noDir;
+        zRotation = ZRotation.noDir;
+        rotationState = ZRotationState.Up;
+        stat = Stat.NothingOn;
+
+
+        MousePositionInit();
+    }
+
     void StatDistribution()
     {
         switch (stat)
         {
             case Stat.SpeedChageOn:
                 SpeedtoOther();
-                moveSlider.color = Color.green;
+                speedSliderFill.color = Color.green;
                 break;
             case Stat.AttackChageOn:
                 AttackToOther();
+                laserDamageSliderFill.color = Color.green;
                 break;
             case Stat.shieldChangeOn:
                 ShieldToOther();
+                ShieldSliderFill.color = Color.green;
                 break;
             case Stat.NothingOn:
-                moveSlider.color = Color.white;
+                //스탯 변경 선택 해제시 색상을 흰색으로 변경
+                StatUIColorInit();
                 break;
         }
+    }
+    //스탯ui색상 흰색으로 변경
+    void StatUIColorInit()
+    {
+        speedSliderFill.color = Color.white;
+        laserDamageSliderFill.color = Color.white;
+        ShieldSliderFill.color = Color.white;
     }
     //스텟 재분배를 위한 활성화 비활성화
     void StatChangeActivate()
@@ -128,9 +158,7 @@ public class PlayerController : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Z))
             {
-                Debug.Log("Z");
                 stat = Stat.SpeedChageOn;
-
             }
 
             if (Input.GetKeyDown(KeyCode.X))
@@ -145,10 +173,8 @@ public class PlayerController : MonoBehaviour
         }
         else if (stat == Stat.SpeedChageOn)
         {
-            Debug.Log("DeActive");
             if (Input.GetKeyDown(KeyCode.Z))
             {
-                Debug.Log("z");
                 stat = Stat.NothingOn;
             }
         }
@@ -168,7 +194,7 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-    //스피드 스텟 재분배
+    //스피드 스탯 재분배
     void SpeedtoOther()
     {
         //스피드 스탯이 변경 활성화 되있을때     
@@ -204,7 +230,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
+    //공격 스탯 재분배
     void AttackToOther()
     {
         //attackChageOn상태가 아니면 작동안함
@@ -239,7 +265,7 @@ public class PlayerController : MonoBehaviour
 
         }
     }
-
+    //쉴드 스탯 재분배
     void ShieldToOther()
     {
         if(stat != Stat.shieldChangeOn)
@@ -271,29 +297,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    Image moveSlider;
-
-    void Start()
-    {
-        //???? ?????? ?????? ???? ??????????
-        //Cursor.lockState = CursorLockMode.Locked;
-
-
-        goHorizontal = GoHorizontal.noDir;
-        goVertical = GoVertical.noDir;
-        zRotation = ZRotation.noDir;
-        rotationState = ZRotationState.Up;
-        stat = Stat.NothingOn;
-
-
-        //스텟 재투자 슬라이더 표시
-        moveSlider = moveSliderFillObj.GetComponent<Image>();
-
-
-
-
-        MousePositionInit();
-    }
 
     void MousePositionInit()
     {
@@ -321,7 +324,6 @@ public class PlayerController : MonoBehaviour
     Vector3 toRotation;
     public float z;
     public Transform player;
-
 
     //기체 x,y회전
     void Turing()
@@ -418,11 +420,12 @@ public class PlayerController : MonoBehaviour
         StatSlider();
     }
 
-    public GameObject moveSliderFillObj;
 
     void StatSlider()
     {
-        moveSlider.fillAmount = moveSpeedStat / moveSpeedStatMax;
+        speedSliderFill.fillAmount = moveSpeedStat / moveSpeedStatMax;
+        laserDamageSliderFill.fillAmount = laserDamageStat / laserDamageStatMax;
+        ShieldSliderFill.fillAmount = shieldStat / shieldStatMax;
     }
 
  
@@ -437,12 +440,13 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             GameObject l = Instantiate(laser);
+            LaserBlast lb = l.GetComponent<LaserBlast>();
+
+            lb.damage = laserDamageStat;
 
             //autoTarget으로 부터 target정보를 넘겨 받아 target이 null이 아닐경우
-            if(target != null)
+            if (target != null)
             {
-                LaserBlast lb = l.GetComponent<LaserBlast>();
-
                 //AutoTarget스크립트에서 전달받은 target정보를 LaserBlast로 전달
                 lb.target = target;
             }

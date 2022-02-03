@@ -5,6 +5,7 @@ using UnityEngine;
 public class LaserBlast : MonoBehaviour
 {
     public GameObject target;
+    public float damage;
 
     void Start()
     {

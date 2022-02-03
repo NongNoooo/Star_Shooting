@@ -9,7 +9,7 @@ public class TargetObject : MonoBehaviour
         UIController ui = GetComponentInParent<UIController>();
         if(ui == null)
         {
-            ui = GameObject.FindGameObjectWithTag("EnemyIndicater").GetComponent<UIController>();
+            ui = GameObject.FindGameObjectWithTag("UI").GetComponent<UIController>();
         }
 
         if (ui == null) Debug.LogError("No UIController component found");
