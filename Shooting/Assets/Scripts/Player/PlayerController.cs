@@ -552,7 +552,7 @@ public class PlayerController : MonoBehaviour
     //s키를 누적시키면 movespeed값이 -가 됨으로 뒤로감
     void Go()
     {
-        transform.position += transform.forward * moveSpeed * 100 * Time.deltaTime;
+        transform.position += transform.forward * moveSpeed * 100.0f * Time.deltaTime;
     }
 
 

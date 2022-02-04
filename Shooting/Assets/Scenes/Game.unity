@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.23678067, g: 0.20500085, b: 0.20824316, a: 1}
+  m_IndirectSpecularColor: {r: 0.23609066, g: 0.2049644, b: 0.20774865, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1536,7 +1536,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 545673633}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a383ce5e5ccaa934982bde12792dca33, type: 3}
   m_Name: 
@@ -3508,7 +3508,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c5444cd11be8ef44838b12c49657470, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveSpeed: 10
+  turnSpeed: 0.2
+  laserDamage: 0
   dogFightState: 0
+  enemySightCondition: 0
+  playerSightCondition: 0
+  playerAimCondition: 0
   Rail: []
 --- !u!4 &1327928812
 Transform:
@@ -3517,14 +3523,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1327928810}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.83303785, y: -1.465087, z: -715}
+  m_LocalRotation: {x: -0.1169915, y: 0, z: 0, w: 0.99313295}
+  m_LocalPosition: {x: -0.83303785, y: 56, z: -475}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1677101460}
   m_Father: {fileID: 0}
   m_RootOrder: 12
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -13.437, y: 0, z: 0}
 --- !u!114 &1327928813
 MonoBehaviour:
   m_ObjectHideFlags: 0
