@@ -4,21 +4,13 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    [Range(0,20.0f)]
-    public float moveSpeed = 10.0f;
-    public float turnSpeed = 0.2f;
-    [Range(0,20.0f)]
-    public float laserDamage = 10.0f;
-    [Range(0,20.0f)]
-    public float shield = 10.0f;
-
-
     public enum DogFightState
     {
         Chasing,
         Chased,
+        ChaseAgain,
         FaceToFace,
-        DoNothing,
+        DoNothing,    
     }
 
     public enum EnemySightCondition
@@ -51,12 +43,34 @@ public class EnemyController : MonoBehaviour
     public PlayerAimCondition playerAimCondition;
     public RayHitCondition rayHitCondition;
 
+
+    [Range(0, 20.0f)]
+    public float moveSpeed = 10.0f;
+    [Range(0.2f, 2.0f)]
+    public float turnSpeed = 0.2f;
+    [Range(0, 20.0f)]
+    public float laserDamage = 10.0f;
+    [Range(0, 20.0f)]
+    public float shield = 10.0f;
+
+    //자신(적) 시야 범위
+    float sightAngle = 20.0f;
+    //자신(적) 공격 범위
+    float attackSightAngle = 18.0f;
+    //플레이어의 시야범위
+    float playerSightAngle = 50.0f;
+
     GameObject player;
     PlayerController pc;
 
-    public float curTime = 0;
+    //공격쿨타임 시간누적
+    public float attackCurTime = 0;
     public GameObject laserObj;
     public GameObject target;
+
+    //플레이어와 자신의 차로 구한 방향
+    Vector3 dir;
+
 
     void Start()
     {
@@ -67,67 +81,64 @@ public class EnemyController : MonoBehaviour
         dogFightState = DogFightState.Chasing;
     }
 
-    Vector3 dir;
-
-    Vector3 playerDir;
-
-    float dis;
-
 
     void Update()
     {
         //플레이어로의 방향 찾음
         dir = (player.transform.position - transform.position).normalized;
-        //자신이 플레이어의 카메라 범위안에 있는지 체크
-        //참고* playerDir의 x,y,z가 0보다 크면 적이 카메라 범위 안에 있는것
-        playerDir = Camera.main.WorldToViewportPoint(transform.position);
-        //자신과 플레이어간의 거리를 구함
 
-        dis = Vector3.Distance(transform.position, player.transform.position);
 
         //항상 앞으로 이동
         //아래의 스위치문들의 상태에 따라
         //속도를 줄이고 방향을 지정해서 움직임을 달리하게 만듬
-        //transform.position += transform.forward * moveSpeed * 100.0f * Time.deltaTime;
+        Move();
 
         //공격 쿨타임
         LaserFireCount();
         LaserFire();
 
-        //레이를 이용해 전방에 물체가 있는지 체크
+
+
+        //레이를 이용해 전방에 물체가 있는지 판단해 아래 스위치문 변경
         UseRayCheckDistanceChanger();
         RayDistanceState();
 
-        //Debug.Log(dir.z);
-        //RotationAngle();
-        PlayerSightStateChanger();
-        EnemySightStateChanger();
-        DogFightStateChanger();
 
-        //플레이어의 시야내에 자신(적)이 있는지 판단
-        PlayerSightState();
-        //자신(적)의 시야내에 플레이어가 있는지 판단
+
+        //자신(적)의 시야내에 플레이어가 있는지 판단해 아래 스위치문 변경
+        EnemySightStateChanger();
         EnemySightState();
-        //플레이어가 자신(적)을 조준하고 있는지 판단
-        PlayerAimState();
-        //PlayerAimState상태 변경
+
+        //플레이어의 시야내에 자신(적)이 있는지 판단해 아래 스위치문 변경
+        PlayerSightStateChanger();
+        PlayerSightState();
+
+        //플레이어가 자신(적)을 조준하고 있는지 판단해 아래 스위치문 변경
         PlayerAimStateChanger();
+        PlayerAimState();
+
+
 
         //위 3개의 스위치 문의 상태에 따라 자신의 움직임을 결정하는 스위치문
+        DogFightStateChanger();
         DogFight();
-
     }
 
+    //이동
+    void Move()
+    {
+        transform.position += transform.forward * moveSpeed * 100.0f * Time.deltaTime;
+    }
 
     //공격 쿨타임
     void LaserFireCount()
     {
-        //curTime이 1보다 크면 리턴
-        if(curTime >= 1.0f)
+        //attackCurTime이 1보다 크면 리턴
+        if (attackCurTime >= 1.0f)
         {
             return;
         }
-        curTime += Time.deltaTime;        
+        attackCurTime += Time.deltaTime;
     }
     //공격
     void LaserFire()
@@ -137,22 +148,23 @@ public class EnemyController : MonoBehaviour
             return;
         }
 
-        if (curTime < 1.0f)
+        if (attackCurTime < 1.0f)
         {
             return;
         }
 
         GameObject l = Instantiate(laserObj);
+        Destroy(l, 1.0f);
         l.transform.position = transform.position;
-        l.transform.forward = transform.forward;
 
-        Debug.Log("적 공격");
-        curTime = 0.0f;
+        //Debug.Log("적 공격");
+        attackCurTime = 0.0f;
 
         EnemyLaserBlast elb = l.GetComponent<EnemyLaserBlast>();
-
         elb.target = target;
+        elb.laserDamage = laserDamage;
     }
+
 
     //레이를 사용한 전방에 있는 물체 체크
     void UseRayCheckDistanceChanger()
@@ -164,12 +176,11 @@ public class EnemyController : MonoBehaviour
         //플레이어와 마주보고있는 상태일경우 
         if (dogFightState == DogFightState.FaceToFace)
         {
-            
+
             Debug.DrawRay(transform.position, transform.forward * 500.0f, Color.red);
 
-            if(Physics.Raycast(transform.position, transform.forward, out hit, 500.0f, mask))
+            if (Physics.Raycast(transform.position, transform.forward, out hit, 500.0f, mask))
             {
-                Debug.Log("500 + " + hit.transform.name);
                 rayHitCondition = RayHitCondition.SomethingHit;
             }
             else
@@ -184,9 +195,9 @@ public class EnemyController : MonoBehaviour
         //플레이어와 마주보고있는 상황이 아닐경우
         Debug.DrawRay(transform.position, transform.forward * 1000.0f, Color.red);
 
-        if(Physics.Raycast(transform.position, transform.forward, out hit, 1000.0f, mask))
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 1000.0f, mask))
         {
-            Debug.Log("1000 + " + hit.transform.name);
+            //Debug.Log("1000 + " + hit.transform.name);
             rayHitCondition = RayHitCondition.SomethingHit;
         }
         else
@@ -194,42 +205,31 @@ public class EnemyController : MonoBehaviour
             rayHitCondition = RayHitCondition.NothingHit;
         }
     }
-
     void RayDistanceState()
     {
         switch (rayHitCondition)
         {
             case RayHitCondition.NothingHit:
-                //RotReturn();
                 break;
             case RayHitCondition.SomethingHit:
                 Avoid();
                 break;
         }
     }
-
+    //위 스위치문에 따라 레이에 물체가 감지되면 회피
     void Avoid()
     {
+        Debug.Log("Avoid");
         float xRot = 2.0f * Time.deltaTime;
         float zRot = 2.0f * Time.deltaTime;
 
-        //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(transform.rotation.x - xRot, 0, transform.rotation.z - zRot), 1.0f * Time.deltaTime);
-        transform.rotation *= Quaternion.Euler(10 * Time.deltaTime, 0, 10 * Time.deltaTime);
+        transform.rotation *= Quaternion.Euler(0, 0, 10 * Time.deltaTime);
 
         transform.position += transform.up * 30 * Time.deltaTime;
     }
 
-    void RotReturn()
-    {
-        //if(transform.rotation.x)
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(new Vector3(0, transform.rotation.y, 0)), Time.deltaTime);
-    }
 
-    //시야 범위
-    float sightAngle = 20f;
-    //자신(적)의 시야 범위 내에 플레이어가 있는지 없는지 판단
-    float playerSightAngle = 45.0f;
-
+    //자신의 시야범위 내에 플레이어가 있는지 없는지 확인
     void EnemySightStateChanger()
     {
         //자신의 forword방향과 플레이어를 바라볼때의 각도
@@ -240,26 +240,45 @@ public class EnemyController : MonoBehaviour
         //thetha = cos^-1( a dot b / |a||b|)
         float theta = Mathf.Acos(dot) * Mathf.Rad2Deg;
 
+
         if (theta <= sightAngle)
         {
             //Debug.Log("플레이어 바라보는중");
             enemySightCondition = EnemySightCondition.LookAtPlayer;
-
-            target = player;
         }
         else
         {
             enemySightCondition = EnemySightCondition.NotLookAtPlayer;
+        }
 
+        if (theta <= attackSightAngle)
+        {
+            target = player;
+
+        }
+        else
+        {
             target = null;
         }
     }
-    //플레이어의 시야범위 내에 자신(적)이 있는지 없는지 판단
+    void EnemySightState()
+    {
+        switch (enemySightCondition)
+        {
+            case EnemySightCondition.LookAtPlayer:
+                break;
+            case EnemySightCondition.NotLookAtPlayer:
+                break;
+
+        }
+    }
+
+    //플레이어의 시야범위 내에 자신(적)이 있는지 없는지 확인
     void PlayerSightStateChanger()
     {
         float dot = Vector3.Dot(player.transform.forward, (transform.position - player.transform.position).normalized);
 
-        //내적을 이용한 각 계산하기
+        //위에서 구한 내적 값을 각도값으로 변환
         // thetha = cos^-1( a dot b / |a||b|)
         float theta = Mathf.Acos(dot) * Mathf.Rad2Deg;
 
@@ -274,7 +293,150 @@ public class EnemyController : MonoBehaviour
             playerSightCondition = PlayerSightCondition.NotInPlayerSight;
         }
     }
-    //
+    void PlayerSightState()
+    {
+        switch (playerSightCondition)
+        {
+            case PlayerSightCondition.InPlayerSight:
+                break;
+            case PlayerSightCondition.NotInPlayerSight:
+                break;
+        }
+    }
+
+
+    public float curTime = 0f;
+    float dodgeTime = 3.0f;
+    //플레이어가 자신을 조준하고있는지 확인
+    void PlayerAimStateChanger()
+    {
+        if (pc.target == null)
+        {
+            playerAimCondition = PlayerAimCondition.PlayerNotAimedMe;
+            return;
+        }
+
+        if (pc.target == this.gameObject)
+        {
+            playerAimCondition = PlayerAimCondition.PlayerAimedMe;
+        }
+    }
+    void PlayerAimState()
+    {
+        switch (playerAimCondition)
+        {
+            case PlayerAimCondition.PlayerAimedMe:
+                Dodge();
+                break;
+            case PlayerAimCondition.PlayerNotAimedMe:
+                break;
+        }
+    }
+    //플레이어가 자신(적)을 타게팅시 회피
+    void Dodge()
+    {
+        if(curTime < dodgeTime)
+        {
+            curTime += Time.deltaTime;
+        }
+
+        float dot = Vector3.Dot(transform.forward, dir);
+
+        //위에서 계산한 dot을
+        //내적을 이용한 각 계산하기
+        //thetha = cos^-1( a dot b / |a||b|)
+        float theta = Mathf.Acos(dot) * Mathf.Rad2Deg;
+
+        //외적으로 플레이어가 자신(적)의 오른쪽에 있는지 왼쪽에 있는지 구분
+        Vector3 cross = Vector3.Cross(transform.forward, dir);
+
+
+        if(theta < 30)
+        {
+            return;
+        }
+
+        if(theta < 100)
+        {
+            //Debug.Log(cross.y);
+            //플레이어가 자신(적)의 기준 오른쪽에 위치해있으면
+            if (cross.y > 0.0f)
+            {
+                DodgeDownLeft();
+            }
+            //플레이어가 자신(적)의 기준 왼쪽에 위치해있으면
+            else if(cross.y < 0.0f)
+            {
+                DodgeUpRight();
+            }
+        }
+        else if(theta >= 100)
+        {
+            if(curTime >= dodgeTime)
+            {
+                int a = Random.Range(0, 3);
+                curTime = 0;
+
+                if(a == 0)
+                {
+                    DodgeUpRight();
+                }
+                else if(a == 1)
+                {
+                    DodgeUpLeft();
+                }
+                else if(a == 2)
+                {
+                    DodgeDownRight();
+                }
+                else if(a == 3)
+                {
+                    DodgeDownLeft();
+                }
+            }
+
+            float dis = Vector3.Distance(transform.position, player.transform.position);
+
+            if(dis < 800)
+            {
+                moveSpeed *= -1;
+            }
+            //Debug.Log(dis);
+        }
+    }
+
+    void DodgeUpRight()
+    {
+        //위로 이동
+        transform.position += transform.up * 300 * Time.deltaTime;
+        //위로 x축 회전 오른쪽으로 z축 회전
+        transform.rotation *= Quaternion.Euler(-40 * Time.deltaTime, 0, 40 * Time.deltaTime);
+    }
+    void DodgeUpLeft()
+    {
+        //위로 이동
+        transform.position += transform.up * 300 * Time.deltaTime;
+        //위로 x축 회전 왼쪽 z축 회전
+        transform.rotation *= Quaternion.Euler(-40 * Time.deltaTime, 0, -40 * Time.deltaTime);
+    }
+    void DodgeDownRight()
+    {
+        //아래로 이동
+        transform.position += -transform.up * 300 * Time.deltaTime;
+        //아래로 x축 회전 오른쪽으로 z축 회전
+        transform.rotation *= Quaternion.Euler(40 * Time.deltaTime, 0, 40 * Time.deltaTime);
+    }
+    void DodgeDownLeft()
+    {
+        //아래로 이동
+        transform.position += -transform.up * 300 * Time.deltaTime;
+        //아래로 x축 회전 왼쪽으로 z축 회전
+        transform.rotation *= Quaternion.Euler(40 * Time.deltaTime, 0, -40 * Time.deltaTime);
+    }
+    
+
+    //위 3개의 스위치문에 따라 쫒는중,쫒기는중,면대면으로 상태변경
+    //상태에 따라 움직임 설정
     void DogFightStateChanger()
     {
         //플레이어를 바라보고 있음
@@ -298,7 +460,10 @@ public class EnemyController : MonoBehaviour
                 //Debug.Log("뒤쫒기는중");
 
                 dogFightState = DogFightState.Chased;
-
+            }
+            else if(playerSightCondition == PlayerSightCondition.NotInPlayerSight)
+            {
+                dogFightState = DogFightState.ChaseAgain;
             }
         }
 
@@ -317,7 +482,6 @@ public class EnemyController : MonoBehaviour
             }
         }
     }
-
     void DogFight()
     {
         switch (dogFightState)
@@ -328,187 +492,135 @@ public class EnemyController : MonoBehaviour
             case DogFightState.Chased:
                 Escape();
                 break;
+            case DogFightState.ChaseAgain:
+                ChaseAgainToPlayer();
+                break;
             case DogFightState.FaceToFace:
                 PassBy();
                 break;
             case DogFightState.DoNothing:
-                //RailRider();
                 break;
         }
     }
 
-    void EnemySightState()
-    {
-        switch (enemySightCondition)
-        {
-            case EnemySightCondition.LookAtPlayer:
-                break;
-            case EnemySightCondition.NotLookAtPlayer:
-                //플레이어가 시야범위 밖에 있음
-                SpeedDown();
-                break;
-            
-        }
-    }
-    
-    void PlayerSightState()
-    {
-        switch (playerSightCondition)
-        {
-            case PlayerSightCondition.InPlayerSight:
-                break;
-            case PlayerSightCondition.NotInPlayerSight:
-                break;
-        }
-    }
 
-    void PlayerAimState()
-    {
-        switch (playerAimCondition)
-        {
-            case PlayerAimCondition.PlayerAimedMe:
-                break;
-            case PlayerAimCondition.PlayerNotAimedMe:
-                break;
-        }
-    }
-
-    void PlayerAimStateChanger()
-    {
-        if(pc.target == null)
-        {
-            playerAimCondition = PlayerAimCondition.PlayerNotAimedMe;
-            return;
-        }
-        
-        if(pc.target == this.gameObject)
-        {
-            playerAimCondition = PlayerAimCondition.PlayerAimedMe;
-        }
-    }
+    float turnSpeedIncrease = 0.03f;
 
     void Chase()
     {
         Debug.Log("Chase");
-        //플레이어와의 거리가 1000보다 크면 플레이어 방향으로 이동
+
 
         if(rayHitCondition == RayHitCondition.NothingHit)
         {
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), turnSpeed * Time.deltaTime);
         }
 
+        moveSpeed += 2.0f * Time.deltaTime;
+        turnSpeed = 0.2f;
+
+        if(shield > 0)
+        {
+            shield -= 1.0f * Time.deltaTime;
+
+            if (laserDamage >= 20.0f)
+            {
+                return;
+            }
+
+            laserDamage += 1.0f * Time.deltaTime;
+        }
+
 
     }
 
-
+    float escCurTime = 0;
+    bool up = true;
+    bool down = false;
+    float xRot;
     void Escape()
     {
         Debug.Log("Escape");
+        escCurTime += Time.deltaTime;
 
+        if(up == true)
+        {
+            transform.rotation *= Quaternion.Euler(-10 * Time.deltaTime, 0, 0);
 
-        if(playerAimCondition != PlayerAimCondition.PlayerAimedMe)
+            //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(transform.rotation.x + xRot, 0, 0), Time.deltaTime);
+        }
+        else if(down == true)
+        {   
+            transform.rotation *= Quaternion.Euler(10 * Time.deltaTime, 0, 0);
+        }
+
+        if(escCurTime > 10.0f)
+        {
+            up = !up;
+            down = !down;
+            escCurTime = 0;
+        }
+
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), turnSpeed * Time.deltaTime);
+
+/*        if (playerAimCondition != PlayerAimCondition.PlayerAimedMe)
         {
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), turnSpeed * Time.deltaTime);
 
             return;
         }
 
-        if(moveSpeed > 5.0f)
+        if(moveSpeed >= 20.0f)
         {
-            moveSpeed += 2.0f * Time.deltaTime;
-            laserDamage -= 2.0f * Time.deltaTime;
+            return;
         }
-        else if(moveSpeed <= 5.0f)
+        //속도를 올림
+        moveSpeed += 1.0f * Time.deltaTime;
+        turnSpeed -= turnSpeedIncrease * Time.deltaTime;
+
+        //레이저 데미지가 0보다 클때 레이저 데미지를 감소시키고 레이저 데미지 상승
+
+        if (laserDamage <= 0)
         {
-            if (laserDamage <= 0)
-            {
-                return;
-            }
-
-            laserDamage -= 2.0f * Time.deltaTime;
-            moveSpeed -= 2.0f * Time.deltaTime;
-            turnSpeed += 0.05f * Time.deltaTime;
-            shield += 1.0f * Time.deltaTime;
-
+            return;
         }
+        laserDamage -= 3.0f * Time.deltaTime;
+
+        //쉴드가 20보다 작으면 쉴드를 같이 올림
+        if (shield >= 20.0)
+        {
+            return;
+        }
+        shield += 1.0f * Time.deltaTime;
+*/    }
+
+    void ChaseAgainToPlayer()
+    {
+        Debug.Log("ChaseAgainToPlayer");
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), turnSpeed * Time.deltaTime);
+
+        if(moveSpeed < 10.0f)
+        {
+            moveSpeed += 3.0f * Time.deltaTime;
+        }
+        
+        turnSpeed += 0.1f * Time.deltaTime;
+
+        if(laserDamage >= 20.0f)
+        {
+            return;
+        }
+        //레이저 데미지가 20보다 작으면 레이저 데미지 올림
+        laserDamage += 1.0f * Time.deltaTime;
     }
 
     void PassBy()
     {
-        //수정필요
-    }
-
-
-    void SpeedDown()
-    {
-        if(playerAimCondition == PlayerAimCondition.PlayerAimedMe)
+        if(moveSpeed > 5.0f)
         {
-            return;
-        }
-        moveSpeed -= 1.0f * Time.deltaTime;
-        turnSpeed += 0.05f * Time.deltaTime;
-
-        if(playerSightCondition == PlayerSightCondition.InPlayerSight)
-        {
-            if(shield >= 20.0f)
-            {
-                return;
-            }
+            moveSpeed -= 2.0f * Time.deltaTime;
+            laserDamage += 1.0f * Time.deltaTime;
             shield += 1.0f * Time.deltaTime;
         }
-        else if(playerSightCondition == PlayerSightCondition.NotInPlayerSight)
-        {
-            if(laserDamage >= 20.0f)
-            {
-                return;
-            }
-            laserDamage += 1.0f * Time.deltaTime;
-        }
     }
-
-    void ShieldDown()
-    {
-        if(playerAimCondition == PlayerAimCondition.PlayerAimedMe)
-        {
-            return;
-        }
-
-        shield -= 1.0f * Time.deltaTime;
-
-        
-
-
-
-
-    }
-    //public float[] dis;
-    //public GameObject previousPos;
-
-    //void FindRail()
-    //{
-    //    dis = new float[Rail.Length];
-    //    for (int i = 0; i < Rail.Length; i++)
-    //    {
-    //        dis[i] = (Rail[i].transform.position - transform.position).magnitude;
-    //    }
-
-    //    float min = dis[0];
-    //    previousPos = Rail[0];
-
-    //    for (int j = 1; j < dis.Length; j++)
-    //    {
-    //        if (min > dis[j])
-    //        {
-    //            min = dis[j];
-    //            previousPos = Rail[j];
-    //        }
-    //    }
-    //}
-
-    //void RailRider()
-    //{
-    //    FindRail();
-    //
-    //
-    //}
 }

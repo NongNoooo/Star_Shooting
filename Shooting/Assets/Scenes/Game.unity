@@ -1363,7 +1363,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 545673633}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a383ce5e5ccaa934982bde12792dca33, type: 3}
   m_Name: 
@@ -1675,7 +1675,7 @@ GameObject:
   - component: {fileID: 626956542}
   m_Layer: 0
   m_Name: PlayerTargetPos
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2567,7 +2567,7 @@ GameObject:
   - component: {fileID: 1071613940}
   m_Layer: 8
   m_Name: MiniMapCamPos
-  m_TagString: Untagged
+  m_TagString: MiniMapPlayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3007,7 +3007,7 @@ GameObject:
   - component: {fileID: 1327928814}
   m_Layer: 0
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3024,18 +3024,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c5444cd11be8ef44838b12c49657470, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 10
-  turnSpeed: 0.2
-  laserDamage: 0
-  shield: 10
   dogFightState: 0
   enemySightCondition: 0
   playerSightCondition: 0
   playerAimCondition: 0
   rayHitCondition: 0
-  curTime: 0
+  moveSpeed: 10
+  turnSpeed: 0.2
+  laserDamage: 0
+  shield: 10
+  attackCurTime: 0
   laserObj: {fileID: 4826024133958569583, guid: 1e69d1149f61b7345a852fba19d8ef2f, type: 3}
   target: {fileID: 0}
+  curTime: 0
 --- !u!4 &1327928812
 Transform:
   m_ObjectHideFlags: 0
@@ -3043,14 +3044,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1327928810}
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 1016}
+  m_LocalRotation: {x: -0, y: -0.31440708, z: -0, w: 0.9492883}
+  m_LocalPosition: {x: -22.314299, y: 0, z: 1103.7319}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1677101460}
   m_Father: {fileID: 0}
   m_RootOrder: 12
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -36.65, z: 0}
 --- !u!114 &1327928813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3087,7 +3088,7 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1327928810}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 206.96489, y: 52.146923, z: 221.64435}
@@ -4632,7 +4633,7 @@ GameObject:
   - component: {fileID: 2040901369}
   m_Layer: 6
   m_Name: PlayerZRot
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4715,7 +4716,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 256
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 819a3adb61a48174e8552e812f5edd56, type: 2}
   m_TargetDisplay: 0
@@ -5015,7 +5016,7 @@ GameObject:
   - component: {fileID: 2144562687}
   m_Layer: 8
   m_Name: MimiMapSphere
-  m_TagString: Untagged
+  m_TagString: MiniMapPlayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -31,4 +31,13 @@ public class LaserBlast : MonoBehaviour
             transform.LookAt(target.transform.position);
         }
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            Debug.Log("Àû ¸ÂÃã");
+            Destroy(this.gameObject);
+        }
+    }
 }

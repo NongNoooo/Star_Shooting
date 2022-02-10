@@ -9,6 +9,8 @@ TagManager:
   - UI
   - Rail
   - EnemyLaser
+  - MiniMapPlayer
+  - Enemy
   layers:
   - Default
   - TransparentFX

@@ -440,6 +440,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             GameObject l = Instantiate(laser);
+            Destroy(l, 1.0f);
             LaserBlast lb = l.GetComponent<LaserBlast>();
 
             lb.damage = laserDamageStat;
