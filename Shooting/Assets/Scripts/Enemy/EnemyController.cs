@@ -66,11 +66,17 @@ public class EnemyController : MonoBehaviour
     //공격쿨타임 시간누적
     public float attackCurTime = 0;
     public GameObject laserObj;
+    [System.NonSerialized]
     public GameObject target;
+
+    //사망시 폭발이펙트
+    public GameObject explosion;
 
     //플레이어와 자신의 차로 구한 방향
     Vector3 dir;
 
+    float hp = 0;
+    float maxHp = 100;
 
     void Start()
     {
@@ -604,7 +610,7 @@ public class EnemyController : MonoBehaviour
             moveSpeed += 3.0f * Time.deltaTime;
         }
         
-        turnSpeed += 0.1f * Time.deltaTime;
+        //turnSpeed += 0.1f * Time.deltaTime;
 
         if(laserDamage >= 20.0f)
         {
@@ -622,5 +628,20 @@ public class EnemyController : MonoBehaviour
             laserDamage += 1.0f * Time.deltaTime;
             shield += 1.0f * Time.deltaTime;
         }
+    }
+
+    //데미지 처리
+    public void Damaged(float laserDamage)
+    {
+        hp -= laserDamage;
+
+        if(hp > 0)
+        {
+            return;
+        }
+
+        GameObject ex = Instantiate(explosion, transform.position, transform.rotation);
+        //Destroy(ex, 1.0f);
+        Destroy(this.gameObject);
     }
 }

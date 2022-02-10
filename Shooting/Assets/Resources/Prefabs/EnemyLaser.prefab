@@ -46,6 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
+  laserDamage: 0
+  dir: {x: 0, y: 0, z: 0}
 --- !u!65 &9068746531257127903
 BoxCollider:
   m_ObjectHideFlags: 0

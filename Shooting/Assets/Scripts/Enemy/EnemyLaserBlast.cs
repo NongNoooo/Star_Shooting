@@ -16,7 +16,6 @@ public class EnemyLaserBlast : MonoBehaviour
         dir = (target.transform.position - transform.position).normalized;
     }
 
-    // Update is called once per frame
     void Update()
     {
         transform.position += dir * 4000 * Time.deltaTime;

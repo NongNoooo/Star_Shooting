@@ -21,6 +21,13 @@ public class TargetIndicator : MonoBehaviour
         rectTransform = GetComponent<RectTransform>();
     }
 
+    private void Update()
+    {
+        if(target == null)
+        {
+            Destroy(this.gameObject);
+        }
+    }
 
     public void InitialiseTargetIndicator(GameObject target, Camera mainCamera, Canvas canvas)
     {
@@ -41,7 +48,10 @@ public class TargetIndicator : MonoBehaviour
 
     protected void SetIndicatorPosition()
     {
-
+        if(target == null)
+        {
+            return;
+        }
         //스크린스페이스 기준 대상 위치 가져옴
         Vector3 indicatorPosition = mainCamera.WorldToScreenPoint(target.transform.position);
         //Debug.Log("GO: "+ gameObject.name + "; slPos: " + indicatorPosition + "; cvWidt: " + canvasRect.rect.width + "; cvHeight: " + canvasRect.rect.height);
