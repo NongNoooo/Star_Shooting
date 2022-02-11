@@ -30,5 +30,10 @@ public class EnemyLaserBlast : MonoBehaviour
 
             PlayerController pc = other.GetComponent<PlayerController>();
         }
+
+        if (other.CompareTag("Environment"))
+        {
+            Destroy(this.gameObject);
+        }
     }
 }

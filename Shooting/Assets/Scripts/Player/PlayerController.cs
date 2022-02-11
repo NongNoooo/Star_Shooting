@@ -93,6 +93,9 @@ public class PlayerController : MonoBehaviour
     public Image laserDamageSliderFill;
     public Image ShieldSliderFill;
 
+    public AudioClip laserSound;
+    AudioSource _as;
+
     //이동속도에 따른 방향 회전 속도 증가 감소
     float turningSpeed;
 
@@ -120,6 +123,8 @@ public class PlayerController : MonoBehaviour
 
 
         MousePositionInit();
+
+        _as = GetComponent<AudioSource>();
     }
 
     void StatDistribution()
@@ -439,6 +444,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
+            _as.PlayOneShot(laserSound);
             GameObject l = Instantiate(laser);
             Destroy(l, 1.0f);
             LaserBlast lb = l.GetComponent<LaserBlast>();

@@ -42,5 +42,11 @@ public class LaserBlast : MonoBehaviour
 
             Destroy(this.gameObject);
         }
+
+        //소행성등 환경물체에 부딪히면 레이저가 사라지도록
+        if (other.CompareTag("Environment"))
+        {
+            Destroy(this.gameObject);
+        }
     }
 }
