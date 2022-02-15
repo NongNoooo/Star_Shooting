@@ -78,6 +78,9 @@ public class EnemyController : MonoBehaviour
     float hp = 0;
     float maxHp = 100;
 
+    GameObject g;
+    GameManager gm;
+
     void Start()
     {
         GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -85,6 +88,9 @@ public class EnemyController : MonoBehaviour
         pc = p.GetComponent<PlayerController>();
 
         dogFightState = DogFightState.Chasing;
+
+        g = GameObject.FindGameObjectWithTag("GameManager");
+        gm = g.GetComponent<GameManager>();
     }
 
 
@@ -642,6 +648,7 @@ public class EnemyController : MonoBehaviour
 
         GameObject ex = Instantiate(explosion, transform.position, transform.rotation);
         //Destroy(ex, 1.0f);
+        gm.EnemyDie();
         Destroy(this.gameObject);
     }
 }

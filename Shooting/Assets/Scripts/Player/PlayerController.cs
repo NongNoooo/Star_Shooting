@@ -109,6 +109,10 @@ public class PlayerController : MonoBehaviour
 
     public Stat stat;
 
+    GameManager gm;
+
+    GameObject g;
+
     void Start()
     {
         //???? ?????? ?????? ???? ??????????
@@ -125,6 +129,10 @@ public class PlayerController : MonoBehaviour
         MousePositionInit();
 
         _as = GetComponent<AudioSource>();
+
+        g = GameObject.FindGameObjectWithTag("GameManager");
+
+        gm = g.GetComponent<GameManager>();
     }
 
     void StatDistribution()

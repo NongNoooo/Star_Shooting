@@ -12,6 +12,7 @@ TagManager:
   - MiniMapPlayer
   - Enemy
   - Environment
+  - GameManager
   layers:
   - Default
   - TransparentFX
