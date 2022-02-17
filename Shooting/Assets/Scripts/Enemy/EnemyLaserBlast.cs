@@ -12,6 +12,11 @@ public class EnemyLaserBlast : MonoBehaviour
 
     void Start()
     {
+        if(target == null)
+        {
+            return;
+        }
+
         transform.LookAt(target.transform.position);
         dir = (target.transform.position - transform.position).normalized;
     }
@@ -19,6 +24,11 @@ public class EnemyLaserBlast : MonoBehaviour
     void Update()
     {
         transform.position += dir * 4000 * Time.deltaTime;
+
+        if(target == null)
+        {
+            transform.position += transform.forward * 4000 * Time.deltaTime;
+        }
     }
 
 
@@ -29,6 +39,8 @@ public class EnemyLaserBlast : MonoBehaviour
             //Debug.Log("피격");
 
             PlayerController pc = other.GetComponent<PlayerController>();
+
+            pc.Damaged(laserDamage);
         }
 
         if (other.CompareTag("Environment"))

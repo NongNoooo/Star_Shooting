@@ -75,6 +75,7 @@ public class PlayerController : MonoBehaviour
 
     public float curTime = 0;
 
+    public float hp = 100;
 
     //스텟 시스템
     float statMax = 60.0f;
@@ -890,5 +891,17 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
- 
+
+    //데미지 처리
+    public void Damaged(float damage)
+    {
+        hp -= damage;
+
+        if(hp > 0)
+        {
+            return;
+        }
+
+        Debug.Log("HP 0");
+    }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4826024133958569580}
   - component: {fileID: -6350275613796252174}
+  - component: {fileID: 8115389707502951930}
   m_Layer: 0
   m_Name: EnemyLaser
   m_TagString: EnemyLaser
@@ -26,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 4826024133958569583}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 12.8514, y: -4.1, z: 24.1}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 10, y: 10, z: 3}
   m_Children:
   - {fileID: 2144727139119356652}
   m_Father: {fileID: 0}
@@ -47,6 +48,19 @@ MonoBehaviour:
   target: {fileID: 0}
   laserDamage: 0
   dir: {x: 0, y: 0, z: 0}
+--- !u!65 &8115389707502951930
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4826024133958569583}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 4, y: 4, z: 120}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6581178932675688643
 GameObject:
   m_ObjectHideFlags: 0
