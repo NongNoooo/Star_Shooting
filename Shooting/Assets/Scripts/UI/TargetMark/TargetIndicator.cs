@@ -46,7 +46,7 @@ public class TargetIndicator : MonoBehaviour
     }
 
 
-    protected void SetIndicatorPosition()
+    void SetIndicatorPosition()
     {
         if(target == null)
         {
@@ -54,7 +54,6 @@ public class TargetIndicator : MonoBehaviour
         }
         //스크린스페이스 기준 대상 위치 가져옴
         Vector3 indicatorPosition = mainCamera.WorldToScreenPoint(target.transform.position);
-        //Debug.Log("GO: "+ gameObject.name + "; slPos: " + indicatorPosition + "; cvWidt: " + canvasRect.rect.width + "; cvHeight: " + canvasRect.rect.height);
 
         //대상이 카메라 범위내에 있을 경우
         if (indicatorPosition.z >= 0f & indicatorPosition.x <= canvasRect.rect.width * canvasRect.localScale.x
@@ -72,17 +71,16 @@ public class TargetIndicator : MonoBehaviour
         else if (indicatorPosition.z >= 0f)
         {
             //화살표 표시 보여줌
-            indicatorPosition = OutOfRangeindicatorPositionB(indicatorPosition);
+            indicatorPosition = OutOfRangeindicatorPositionBack(indicatorPosition);
             targetOutOfSight(true, indicatorPosition);
         }
         else
         {
-            //Invert indicatorPosition! Otherwise the indicator's positioning will invert if the target is on the backside of the camera!
             //표적이 카메라 뒤에 잇을 경우 마크 위치 반전
             indicatorPosition *= -1f;
 
             //마크 위치 설정
-            indicatorPosition = OutOfRangeindicatorPositionB(indicatorPosition);
+            indicatorPosition = OutOfRangeindicatorPositionBack(indicatorPosition);
             targetOutOfSight(true, indicatorPosition);
 
         }
@@ -93,30 +91,31 @@ public class TargetIndicator : MonoBehaviour
     }
 
     //대상이 범위 밖으로 나갔을때
-    private Vector3 OutOfRangeindicatorPositionB(Vector3 indicatorPosition)
+    //대상이 카메라를 기준으로 뒤에 있을때
+    private Vector3 OutOfRangeindicatorPositionBack(Vector3 indicatorPosition)
     {
-        //카메라 범위 밖으로 나갔을때 마크 문제생기는거 방지?
         indicatorPosition.z = 0f;
 
-        //캔버스 중심 계산
-        
+        //캔버스 중심 계산       
         Vector3 canvasCenter = new Vector3(canvasRect.rect.width / 2f, canvasRect.rect.height / 2f, 0f) * canvasRect.localScale.x;
         indicatorPosition -= canvasCenter;
 
-        //대상으로 지정할 벡터가 캔버스 직경의 y 경계와 교차하는지(첫 번째) 또는 벡터가 x 경계와 교차하는지(첫 번째) 계산
-        //최대값으로 설정해야 하는 테두리와 표시기를 이동해야 하는 테두리(위/아래 또는 왼쪽/오른쪽)를 확인
+        //현재 인디케이터 위치가 x,y축 확인
         float divX = (canvasRect.rect.width / 2f - outOfSightOffest) / Mathf.Abs(indicatorPosition.x);
         float divY = (canvasRect.rect.height / 2f - outOfSightOffest) / Mathf.Abs(indicatorPosition.y);
 
-        //x 경계와 먼저 교차하는 경우 x-one을 경계에 놓고 y-one을 적절히 조절합니다(Trigonometry)
+        //인디케이터의 x,y축 비교
         if (divX < divY)
         {
+            //두 백터 사이 각 비교
+            //                                 회전 축             비교할 백	        기준 백터
             float angle = Vector3.SignedAngle(Vector3.right, indicatorPosition, Vector3.forward);
+
+            //0또는 양수면 1반환 음수면 -1반환
             indicatorPosition.x = Mathf.Sign(indicatorPosition.x) * (canvasRect.rect.width * 0.5f - outOfSightOffest) * canvasRect.localScale.x;
+            // 탄젠트 세타
             indicatorPosition.y = Mathf.Tan(Mathf.Deg2Rad * angle) * indicatorPosition.x;
         }
-
-        //y 테두리와 먼저 교차하는 경우 y-one을 테두리에 놓고 x-one을 적절히 조절합니다(Trigonometry).
         else
         {
             float angle = Vector3.SignedAngle(Vector3.up, indicatorPosition, Vector3.forward);
@@ -131,25 +130,17 @@ public class TargetIndicator : MonoBehaviour
     }
 
 
-
+    //대상이 화면 밖으로 나갔을때
     private void targetOutOfSight(bool oos, Vector3 indicatorPosition)
     {
-        //대상이 카메라 밖으로 나갔을 경우
         if (oos)
         {
-            //일부 콘텐츠 활성화 및 비활성화
+            //사각형 비활성화 삼각형 이미지 활성화
             if (OffScreenTargetIndicator.gameObject.activeSelf == false) OffScreenTargetIndicator.gameObject.SetActive(true);
             if (TargetIndicatorImage.isActiveAndEnabled == true) TargetIndicatorImage.enabled = false;
 
-            //Set the rotation of the OutOfSight direction indicator
+            //삼각형 이미지를 중심을 기준으로 타겟이 있는 위치로 회전
             OffScreenTargetIndicator.rectTransform.rotation = Quaternion.Euler(rotationOutOfSightTargetindicator(indicatorPosition));
-
-            //outOfSightArrow.rectTransform.rotation  = Quaternion.LookRotation(indicatorPosition- new Vector3(canvasRect.rect.width/2f,canvasRect.rect.height/2f,0f)) ;
-            /*outOfSightArrow.rectTransform.rotation = Quaternion.LookRotation(indicatorPosition);
-            viewVector = indicatorPosition- new Vector3(canvasRect.rect.width/2f,canvasRect.rect.height/2f,0f);
-            
-            //Debug.Log("CanvasRectCenter: " + canvasRect.rect.center);
-            outOfSightArrow.rectTransform.rotation *= Quaternion.Euler(0f,90f,0f);*/
         }
 
         //In case that the indicator is InSight, turn on the inSight stuff and turn off the OOS stuff.
@@ -163,13 +154,13 @@ public class TargetIndicator : MonoBehaviour
 
     private Vector3 rotationOutOfSightTargetindicator(Vector3 indicatorPosition)
     {
-        //Calculate the canvasCenter
+        //캔버스 중심 계산
         Vector3 canvasCenter = new Vector3(canvasRect.rect.width / 2f, canvasRect.rect.height / 2f, 0f) * canvasRect.localScale.x;
 
-        //Calculate the signedAngle between the position of the indicator and the Direction up.
+        //인디케이터 위치에서 캔버스 각도 계산
         float angle = Vector3.SignedAngle(Vector3.up, indicatorPosition - canvasCenter, Vector3.forward);
 
-        //return the angle as a rotation Vector
+        //계산한 각도 값 리턴
         return new Vector3(0f, 0f, angle);
     }
 }

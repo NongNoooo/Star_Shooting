@@ -34,22 +34,21 @@ public class CrossHairManager : MonoBehaviour
         Arrow = dirMousePointer.transform.GetChild(0).gameObject;
         CenterImage = dirMousePointer.transform.GetChild(1).gameObject;
 
-
-
         mh = Input.mousePosition.x - mOriPosX;
         mv = Input.mousePosition.y - mOriPosY;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        //캔버스 중앙 구하기
+        //캔버스 중앙
         canvasCenter = new Vector3(canvasRect.rect.width / 2f, canvasRect.rect.height / 2f, 0f) * canvasRect.localScale.x;
 
 
-        //마우스 위치가 캔버스 중앙일때 
+        //마우스 위치가 캔버스 중앙으로부터의 거리가 mouseCenterPos보다 작을때
         if(Vector3.Distance(canvasCenter,dirMousePointer.transform.position) < mouseCenterPos)
         {
+            //화살표비활성화
+            //센터이미지 활성화
             CenterImage.SetActive(true);
             Arrow.SetActive(false);
 
@@ -58,14 +57,12 @@ public class CrossHairManager : MonoBehaviour
             //마우스가 미세하게 움직여도 바로 회전하지않기때문에 마우스위치가 캔버스 중앙일때는 centerimage가 마우스를 따라 움직이지 않도록 고정
             CenterImage.transform.position = canvasCenter;
         }
-        //아닐때
         else if(Vector3.Distance(canvasCenter, dirMousePointer.transform.position) >= mouseCenterPos)
         {
             CenterImage.SetActive(false);
             Arrow.SetActive(true);
 
             float angle = Vector3.SignedAngle(Vector3.right, canvasCenter - dirMousePointer.transform.position, Vector3.forward);
-            //                                                                                                  시계방향 회전
 
             dirMousePointer.transform.rotation = Quaternion.Euler(0, 0, angle);
         }

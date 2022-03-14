@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     public GameObject playerHpTxtObj;
     float hp;
 
+    public GameObject endGame;
+
     void Awake()
     {
         enemy = GameObject.FindGameObjectsWithTag("Enemy");
@@ -38,11 +40,10 @@ public class GameManager : MonoBehaviour
         //hp반올림
         hp = Mathf.Round(pc.hp);
 
-
-        enemyTxt.text = "Enemy : " + enemyCount;
-
         //tostring으로 문자로 반환
         playerHpTxt.text = hp.ToString();
+
+        enemyTxt.text = "Enemy : " + enemyCount;
     }
 
     public void EnemyDie()
@@ -58,6 +59,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        endGame.SetActive(true);
+        player.SetActive(false);
         Debug.Log("GameEnd");
     }
 }

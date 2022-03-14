@@ -56,7 +56,7 @@ public class EnemyController : MonoBehaviour
     //자신(적) 시야 범위
     float sightAngle = 20.0f;
     //자신(적) 공격 범위
-    float attackSightAngle = 18.0f;
+    float attackSightAngle = 45.0f;
     //플레이어의 시야범위
     float playerSightAngle = 50.0f;
 
@@ -100,9 +100,6 @@ public class EnemyController : MonoBehaviour
         dir = (player.transform.position - transform.position).normalized;
 
 
-        //항상 앞으로 이동
-        //아래의 스위치문들의 상태에 따라
-        //속도를 줄이고 방향을 지정해서 움직임을 달리하게 만듬
         Move();
 
         //공격 쿨타임
@@ -114,7 +111,6 @@ public class EnemyController : MonoBehaviour
         //레이를 이용해 전방에 물체가 있는지 판단해 아래 스위치문 변경
         UseRayCheckDistanceChanger();
         RayDistanceState();
-
 
 
         //자신(적)의 시야내에 플레이어가 있는지 판단해 아래 스위치문 변경
@@ -188,9 +184,6 @@ public class EnemyController : MonoBehaviour
         //플레이어와 마주보고있는 상태일경우 
         if (dogFightState == DogFightState.FaceToFace)
         {
-
-            Debug.DrawRay(transform.position, transform.forward * 500.0f, Color.red);
-
             if (Physics.Raycast(transform.position, transform.forward, out hit, 500.0f, mask))
             {
                 rayHitCondition = RayHitCondition.SomethingHit;
@@ -205,8 +198,6 @@ public class EnemyController : MonoBehaviour
 
 
         //플레이어와 마주보고있는 상황이 아닐경우
-        Debug.DrawRay(transform.position, transform.forward * 1000.0f, Color.red);
-
         if (Physics.Raycast(transform.position, transform.forward, out hit, 1000.0f, mask))
         {
             //Debug.Log("1000 + " + hit.transform.name);
@@ -244,12 +235,12 @@ public class EnemyController : MonoBehaviour
     //자신의 시야범위 내에 플레이어가 있는지 없는지 확인
     void EnemySightStateChanger()
     {
-        //자신의 forword방향과 플레이어를 바라볼때의 각도
+        //자신과 플레이어간의 각도 구하기
+        //자신의 forword방향과 dir(플레이어와 자신의 백터 차)각도
         float dot = Vector3.Dot(transform.forward, dir);
 
-        //위에서 계산한 dot을
-        //내적을 이용한 각 계산하기
-        //thetha = cos^-1( a dot b / |a||b|)
+        //위에서 계산한 dot을 각도로 변경
+        //acos dot만 계산하면 라디안이 나옴 Rad2Deg를 곱해서 각도로 받음
         float theta = Mathf.Acos(dot) * Mathf.Rad2Deg;
 
 
@@ -290,14 +281,10 @@ public class EnemyController : MonoBehaviour
     {
         float dot = Vector3.Dot(player.transform.forward, (transform.position - player.transform.position).normalized);
 
-        //위에서 구한 내적 값을 각도값으로 변환
-        // thetha = cos^-1( a dot b / |a||b|)
         float theta = Mathf.Acos(dot) * Mathf.Rad2Deg;
 
-        //Debug.Log("타겟과 AI의 각도 : " + theta);
         if (theta <= playerSightAngle)
         {
-            //Debug.Log("플레이어 적 바라보는중");
             playerSightCondition = PlayerSightCondition.InPlayerSight;
         }
         else
@@ -347,7 +334,14 @@ public class EnemyController : MonoBehaviour
     //플레이어가 자신(적)을 타게팅시 회피
     void Dodge()
     {
-        if(curTime < dodgeTime)
+        float dis = Vector3.Distance(transform.position, player.transform.position);
+
+        if (dis < 800)
+        {
+            moveSpeed *= -1;
+        }
+
+        if (curTime < dodgeTime)
         {
             curTime += Time.deltaTime;
         }
@@ -407,12 +401,6 @@ public class EnemyController : MonoBehaviour
                 }
             }
 
-            float dis = Vector3.Distance(transform.position, player.transform.position);
-
-            if(dis < 800)
-            {
-                moveSpeed *= -1;
-            }
             //Debug.Log(dis);
         }
     }
@@ -457,7 +445,6 @@ public class EnemyController : MonoBehaviour
             //플레이어가 자신을 바라보고있지 않을때 
             if (playerSightCondition == PlayerSightCondition.NotInPlayerSight)
             {
-                //Debug.Log("뒤쫒는중");
                 dogFightState = DogFightState.Chasing;
             }
         }
@@ -516,12 +503,9 @@ public class EnemyController : MonoBehaviour
     }
 
 
-    float turnSpeedIncrease = 0.03f;
-
     void Chase()
     {
         Debug.Log("Chase");
-
 
         if(rayHitCondition == RayHitCondition.NothingHit)
         {
@@ -542,14 +526,11 @@ public class EnemyController : MonoBehaviour
 
             laserDamage += 1.0f * Time.deltaTime;
         }
-
-
     }
 
     float escCurTime = 0;
     bool up = true;
     bool down = false;
-    float xRot;
     void Escape()
     {
         Debug.Log("Escape");
@@ -558,8 +539,6 @@ public class EnemyController : MonoBehaviour
         if(up == true)
         {
             transform.rotation *= Quaternion.Euler(-10 * Time.deltaTime, 0, 0);
-
-            //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(transform.rotation.x + xRot, 0, 0), Time.deltaTime);
         }
         else if(down == true)
         {   
@@ -575,36 +554,7 @@ public class EnemyController : MonoBehaviour
 
         transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), turnSpeed * Time.deltaTime);
 
-/*        if (playerAimCondition != PlayerAimCondition.PlayerAimedMe)
-        {
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), turnSpeed * Time.deltaTime);
-
-            return;
-        }
-
-        if(moveSpeed >= 20.0f)
-        {
-            return;
-        }
-        //속도를 올림
-        moveSpeed += 1.0f * Time.deltaTime;
-        turnSpeed -= turnSpeedIncrease * Time.deltaTime;
-
-        //레이저 데미지가 0보다 클때 레이저 데미지를 감소시키고 레이저 데미지 상승
-
-        if (laserDamage <= 0)
-        {
-            return;
-        }
-        laserDamage -= 3.0f * Time.deltaTime;
-
-        //쉴드가 20보다 작으면 쉴드를 같이 올림
-        if (shield >= 20.0)
-        {
-            return;
-        }
-        shield += 1.0f * Time.deltaTime;
-*/    }
+    }
 
     void ChaseAgainToPlayer()
     {
@@ -639,15 +589,22 @@ public class EnemyController : MonoBehaviour
     //데미지 처리
     public void Damaged(float laserDamage)
     {
-        hp -= laserDamage;
+        if(shield > 0)
+        {
+            shield -= laserDamage;
+        }
 
-        if(hp > 0)
+        if(shield <= 0)
+        {
+            hp -= laserDamage;
+        }
+
+        if (hp > 0)
         {
             return;
         }
 
         GameObject ex = Instantiate(explosion, transform.position, transform.rotation);
-        //Destroy(ex, 1.0f);
         gm.EnemyDie();
         Destroy(this.gameObject);
     }

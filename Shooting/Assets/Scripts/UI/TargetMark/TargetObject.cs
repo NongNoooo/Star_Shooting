@@ -12,8 +12,6 @@ public class TargetObject : MonoBehaviour
             ui = GameObject.FindGameObjectWithTag("UI").GetComponent<UIController>();
         }
 
-        if (ui == null) Debug.LogError("No UIController component found");
-
         ui.AddTargetIndicator(this.gameObject);
     }
 }

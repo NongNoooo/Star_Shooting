@@ -5,21 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class TimeLineEnd : MonoBehaviour
 {
-
-
     private void OnEnable()
     {
         SceneManager.LoadScene(1);
-    }
-
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
