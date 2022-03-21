@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.23678067, g: 0.20500085, b: 0.20824316, a: 1}
+  m_IndirectSpecularColor: {r: 0.23609066, g: 0.2049644, b: 0.20774865, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -13426,7 +13426,7 @@ MonoBehaviour:
   shieldStat: 10
   speedSliderFill: {fileID: 950212967}
   speedSliderUI: {fileID: 1097317486}
-  laserDamageSliderFill: {fileID: 1329772947}
+  laserDamageSliderFill: {fileID: 1107196262}
   laserDamageSliderUI: {fileID: 460821187}
   ShieldSliderFill: {fileID: 158044122}
   laserSound: {fileID: 8300000, guid: 5ac8d09d4f65d4f309d92f776617f157, type: 3}
@@ -99296,7 +99296,7 @@ ParticleSystem:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  moveWithTransform: 1
+  moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 0
   randomSeed: 0
@@ -99851,7 +99851,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 0
+    angle: 10
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
