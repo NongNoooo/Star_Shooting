@@ -23,11 +23,11 @@ public class EnemyLaserBlast : MonoBehaviour
 
     void Update()
     {
-        transform.position += dir * 4000 * Time.deltaTime;
+        transform.position += dir * 10000 * Time.deltaTime;
 
         if(target == null)
         {
-            transform.position += transform.forward * 4000 * Time.deltaTime;
+            transform.position += transform.forward * 10000 * Time.deltaTime;
         }
     }
 

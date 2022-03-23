@@ -19,13 +19,13 @@ public class LaserBlast : MonoBehaviour
         {
             //??? null? ??? ??? ??
             //??? autotarget ????? targetindicator? ?? ???
-            transform.Translate(Vector3.forward * 4000 * Time.deltaTime);
+            transform.Translate(Vector3.forward * 10000 * Time.deltaTime);
         }
         else if(target != null)
         {
             Vector3 dir = target.transform.position - transform.position;
 
-            transform.position += dir.normalized * 4000 * Time.deltaTime;
+            transform.position += dir.normalized * 10000 * Time.deltaTime;
             transform.LookAt(target.transform.position);
         }
     }

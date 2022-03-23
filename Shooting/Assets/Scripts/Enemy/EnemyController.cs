@@ -56,7 +56,7 @@ public class EnemyController : MonoBehaviour
     //자신(적) 시야 범위
     float sightAngle = 20.0f;
     //자신(적) 공격 범위
-    float attackSightAngle = 45.0f;
+    float attackSightAngle = 90.0f;
     //플레이어의 시야범위
     float playerSightAngle = 50.0f;
 
@@ -81,6 +81,10 @@ public class EnemyController : MonoBehaviour
     GameObject g;
     GameManager gm;
 
+    public AudioClip laserSound;
+
+    AudioSource _as;
+
     void Start()
     {
         GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -91,6 +95,8 @@ public class EnemyController : MonoBehaviour
 
         g = GameObject.FindGameObjectWithTag("GameManager");
         gm = g.GetComponent<GameManager>();
+
+        _as = GetComponent<AudioSource>();
     }
 
 
@@ -135,7 +141,7 @@ public class EnemyController : MonoBehaviour
     //이동
     void Move()
     {
-        transform.position += transform.forward * moveSpeed * 100.0f * Time.deltaTime;
+        transform.position += transform.forward * moveSpeed * 300.0f * Time.deltaTime;
     }
 
     //공격 쿨타임
@@ -161,8 +167,9 @@ public class EnemyController : MonoBehaviour
             return;
         }
 
+        _as.PlayOneShot(laserSound);
         GameObject l = Instantiate(laserObj);
-        Destroy(l, 1.0f);
+        Destroy(l, 8.0f);
         l.transform.position = transform.position;
 
         //Debug.Log("적 공격");

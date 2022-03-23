@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     PlayerController pc;
 
     GameObject[] enemy;
+    GameObject[] target;
 
     public float enemyCount;
 
@@ -22,9 +23,11 @@ public class GameManager : MonoBehaviour
 
     public GameObject endGame;
 
+
     void Awake()
     {
         enemy = GameObject.FindGameObjectsWithTag("Enemy");
+        target = GameObject.FindGameObjectsWithTag("Target");
 
         enemyCount = enemy.Length;
 
@@ -51,6 +54,7 @@ public class GameManager : MonoBehaviour
         enemyCount--;
         GameEnd();
     }
+
 
     void GameEnd()
     {

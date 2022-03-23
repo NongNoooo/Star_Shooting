@@ -66,6 +66,9 @@ public class PlayerController : MonoBehaviour
 
     public GameObject endGame;
 
+    GameObject[] enemy;
+    GameObject[] targets;
+
     void Start()
     {
         zRotation = ZRotation.noDir;
@@ -75,6 +78,9 @@ public class PlayerController : MonoBehaviour
         MousePositionInit();
 
         _as = GetComponent<AudioSource>();
+
+        enemy = GameObject.FindGameObjectsWithTag("Enemy");
+        targets = GameObject.FindGameObjectsWithTag("Target");
     }
 
     void StatDistribution()
@@ -346,7 +352,7 @@ public class PlayerController : MonoBehaviour
         {
             _as.PlayOneShot(laserSound);
             GameObject l = Instantiate(laser);
-            Destroy(l, 1.0f);
+            Destroy(l, 2.0f);
             LaserBlast lb = l.GetComponent<LaserBlast>();
 
             lb.damage = laserDamageStat;
@@ -450,7 +456,7 @@ public class PlayerController : MonoBehaviour
     //s키를 누적시키면 movespeed값이 -가 됨으로 뒤로감
     void Go()
     {
-        transform.position += transform.forward * moveSpeed * 100.0f * Time.deltaTime;
+        transform.position += transform.forward * moveSpeed * 300.0f * Time.deltaTime;
     }
 
 
@@ -517,6 +523,13 @@ public class PlayerController : MonoBehaviour
         }
 
         Debug.Log("HP 0");
+
+        for (int i = 0; i < enemy.Length; i++)
+        {
+            Destroy(enemy[i]);
+            Destroy(targets[i]);
+        }
+
         endGame.SetActive(true);
         gameObject.SetActive(false);
     }
